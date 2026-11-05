@@ -1,0 +1,319 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UnityEngine;
+
+internal class ComboBoxBase {
+    protected static bool forceToUnShow = false;
+    protected static int useControlID = -1;
+    protected bool isClickedComboButton = false;
+    protected int selectedItemIndex = 0;
+    protected int backSelectedItemIndex = 0;
+
+    protected float itemWidth;
+    protected float itemHeight;
+
+    protected GUIContent buttonContent;
+    protected GUIContent[] listContent;
+    protected GUIStyle buttonStyle;
+    protected GUIStyle boxStyle;
+    protected GUIStyle listStyle;
+
+    protected ComboBoxBase(GUIContent buttonContent, GUIContent[] listContent, GUIStyle listStyle)
+        : this(buttonContent, listContent, "button", "box", listStyle) {
+    }
+
+    protected ComboBoxBase(GUIContent buttonContent, GUIContent[] listContent,
+                           GUIStyle buttonStyle, GUIStyle boxStyle, GUIStyle listStyle) {
+        this.buttonContent = buttonContent;
+        this.listContent = listContent;
+        this.buttonStyle = buttonStyle;
+        this.boxStyle = boxStyle;
+        this.listStyle = listStyle;
+        InitIndex();
+        InitSize();
+    }
+
+    protected void InitSize() {
+        int maxLength = 0;
+        foreach (GUIContent c in listContent) {
+            if (maxLength < c.text.Length) maxLength = c.text.Length;
+        }
+        itemWidth = maxLength * 9f;
+        itemHeight = listStyle.CalcHeight(listContent[0], 1.0f);
+
+    }
+    protected void InitIndex() {
+        for (int i = 0; i < listContent.Length; i++) {
+            if (buttonContent.text == listContent[i].text) {
+                selectedItemIndex = i;
+                return;
+            }
+        }
+        selectedItemIndex = -1;
+    }
+    public int SelectItem(string item) {
+        string itemLow = item.ToLower();
+        for (int i = 0; i < listContent.Length; i++) {
+            if (listContent[i].text.ToLower() == itemLow) {
+                selectedItemIndex = i;
+                return i;
+            }
+        }
+        return -1;
+    }
+    public bool IsClickedComboButton {
+        get { return isClickedComboButton; }
+    }
+
+    public int ItemCount {
+        get { return listContent.Length; }
+    }
+
+    public int SelectedItemIndex {
+        get { return selectedItemIndex; }
+        set {
+            if (selectedItemIndex != value) {
+                if (value < listContent.Length && value >= 0) {
+                    selectedItemIndex = value;
+                    buttonContent = listContent[selectedItemIndex];
+                } else {
+                    buttonContent = GUIContent.none;
+                    selectedItemIndex = -1;
+                }
+            }
+        }
+    }
+
+    protected Vector2 scrollPosition = Vector2.zero;
+}
+
+internal class ComboBox : ComboBoxBase {
+    public Rect rect;
+
+    public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, GUIStyle listStyle)
+        : base(buttonContent, listContent, listStyle) {
+        this.rect = rect;
+    }
+
+    public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, GUIStyle buttonStyle, GUIStyle boxStyle, GUIStyle listStyle)
+        : base(buttonContent, listContent, buttonStyle, boxStyle, listStyle) {
+        this.rect = rect;
+    }
+
+    public int Show() {
+        if (forceToUnShow) {
+            forceToUnShow = false;
+            isClickedComboButton = false;
+        }
+
+        bool done = false;
+        int controlID = GUIUtility.GetControlID(FocusType.Passive);
+
+        switch (Event.current.GetTypeForControl(controlID)) {
+            case EventType.MouseUp:
+                done |= isClickedComboButton;
+                break;
+        }
+
+        if (GUI.Button(rect, buttonContent, buttonStyle)) {
+            if (useControlID == -1) {
+                useControlID = controlID;
+                isClickedComboButton = false;
+            }
+
+            if (useControlID != controlID) {
+                forceToUnShow = true;
+                useControlID = controlID;
+            }
+            isClickedComboButton = true;
+        }
+
+        if (isClickedComboButton) {
+            var listRect = new Rect(rect.x, rect.y + itemHeight,
+                      rect.width, itemHeight * listContent.Length);
+
+            GUI.Box(listRect, string.Empty, boxStyle);
+            int newSelectedItemIndex = GUI.SelectionGrid(listRect, selectedItemIndex, listContent, 1, listStyle);
+            if (newSelectedItemIndex != selectedItemIndex) {
+                SelectedItemIndex = newSelectedItemIndex;
+            }
+        }
+
+        isClickedComboButton &= !done;
+        return selectedItemIndex;
+    }
+}
+
+/// <summary>
+/// GUILayout版のコンボボックスクラス. 
+/// </summary>
+internal class ComboBoxLO : ComboBoxBase {
+    private readonly bool labelFixed;
+    public ComboBoxLO(GUIContent buttonContent, GUIContent[] listContent, GUIStyle listStyle)
+        : base(buttonContent, listContent, listStyle) {
+    }
+
+    public ComboBoxLO(GUIContent buttonContent, GUIContent[] listContent,
+                      GUIStyle buttonStyle, GUIStyle boxStyle, GUIStyle listStyle, bool labelFixed)
+        : base(buttonContent, listContent, buttonStyle, boxStyle, listStyle) {
+        this.labelFixed = labelFixed;
+    }
+    public void SetItemWidth(float itemWidth) {
+        this.itemWidth = itemWidth;
+    }
+    public int Show(GUILayoutOption buttonOpt) {
+        if (forceToUnShow) {
+            forceToUnShow = false;
+            isClickedComboButton = false;
+        }
+
+        bool done = false;
+        int controlID = GUIUtility.GetControlID(FocusType.Passive);
+
+        switch (Event.current.GetTypeForControl(controlID)) {
+            case EventType.MouseUp:
+                done |= isClickedComboButton;
+                break;
+        }
+
+        bool expand = isClickedComboButton;
+        if (expand) GUILayout.BeginVertical(boxStyle, GUILayout.Width(itemWidth));
+        try {
+            if (GUILayout.Button(buttonContent, buttonStyle, buttonOpt, GUILayout.Width(itemWidth))) {
+                if (useControlID == -1) {
+                    useControlID = controlID;
+                    isClickedComboButton = false;
+                }
+
+                if (useControlID != controlID) {
+                    forceToUnShow = true;
+                    useControlID = controlID;
+                }
+                isClickedComboButton = true;
+            }
+
+            if (isClickedComboButton) {
+                float height = itemHeight * listContent.Length;
+                int newSelectedItemIndex = GUILayout.SelectionGrid(selectedItemIndex, listContent, 1, listStyle,
+                                                                   GUILayout.Width(itemWidth), GUILayout.Height(height));
+                if (newSelectedItemIndex != selectedItemIndex) {
+                    // ラベル指定に応じて
+                    if (!labelFixed) {
+                        SelectedItemIndex = newSelectedItemIndex;
+                    } else {
+                        selectedItemIndex = newSelectedItemIndex;
+                    }
+                }
+            }
+        } finally {
+            if (expand) GUILayout.EndVertical();
+        }
+
+        isClickedComboButton &= !done;
+        return selectedItemIndex;
+    }
+
+    public int ShowScroll(GUILayoutOption buttonOpt) {
+        if (GUILayout.Button(buttonContent, buttonStyle, buttonOpt, GUILayout.MinWidth(90))) {
+            if (ComboPopup.IsOpen(this)) {
+                ComboPopup.Cancel();
+            } else {
+                backSelectedItemIndex = selectedItemIndex;
+                Rect local = GUILayoutUtility.GetLastRect();
+                Vector2 mouse = Event.current.mousePosition;
+                // GUI.Window gives a window-local mouse. That offset is the button.
+                Vector2 relative = new Vector2(mouse.x - local.width * 0.5f, mouse.y - local.height * 0.5f);
+                ComboPopup.Open(this, relative, new Vector2(Mathf.Max(local.width, 90f), Mathf.Max(local.height, 18f)));
+            }
+        }
+        return selectedItemIndex;
+    }
+
+    public void CancelPopup() {
+        selectedItemIndex = backSelectedItemIndex;
+        if (selectedItemIndex >= 0 && selectedItemIndex < listContent.Length) buttonContent = listContent[selectedItemIndex];
+    }
+
+    public int DrawPopupList() {
+        scrollPosition = GUILayout.BeginScrollView(scrollPosition);
+        float height = Mathf.Max(itemHeight, 18f) * listContent.Length;
+        int picked = GUILayout.SelectionGrid(selectedItemIndex, listContent, 1, listStyle, GUILayout.Height(height), GUILayout.ExpandWidth(true));
+        GUILayout.EndScrollView();
+        return picked;
+    }
+}
+
+internal static class ComboPopup {
+    public static Vector2 windowOffset;
+    static ComboBoxLO current;
+    static Vector2 relativeToWindow;
+    static Rect buttonScreen;
+    static Rect popupScreen;
+    const int PopupId = 875421;
+
+    public static bool IsOpen(ComboBoxLO box) {
+        return current == box;
+    }
+
+    public static void Open(ComboBoxLO box, Vector2 relative, Vector2 buttonSize) {
+        current = box;
+        relativeToWindow = relative;
+        buttonSizeStored = buttonSize;
+        Place();
+    }
+
+    static Vector2 buttonSizeStored;
+
+    static void Place() {
+        Vector2 abs = windowOffset + relativeToWindow;
+        buttonScreen = new Rect(abs.x, abs.y, buttonSizeStored.x, buttonSizeStored.y);
+        float width = Mathf.Max(buttonSizeStored.x, 180f);
+        float height = Mathf.Min(280f, 22f * (current == null ? 1 : current.ItemCount) + 12f);
+        popupScreen = new Rect(abs.x, abs.y, width, height);
+        if (popupScreen.xMax > Screen.width) popupScreen.x = Screen.width - popupScreen.width;
+        if (popupScreen.y < 0f) popupScreen.y = 0f;
+    }
+
+    public static void Cancel() {
+        if (current != null) current.CancelPopup();
+        current = null;
+    }
+
+    public static void Draw() {
+        if (current == null) return;
+        Place();
+        popupScreen = GUI.Window(PopupId, popupScreen, DrawWindow, "", PopupStyle());
+        Event e = Event.current;
+        if (e.type == EventType.MouseDown && !popupScreen.Contains(e.mousePosition) && !buttonScreen.Contains(e.mousePosition)) {
+            Cancel();
+            e.Use();
+        }
+    }
+
+    static GUIStyle popupStyle;
+    static GUIStyle PopupStyle() {
+        if (popupStyle != null) return popupStyle;
+        popupStyle = new GUIStyle(UIParams.Instance.winStyle);
+        Texture2D bg = new Texture2D(2, 2);
+        Color dark = new Color(0.08f, 0.08f, 0.08f, 0.96f);
+        bg.SetPixels(new Color[] { dark, dark, dark, dark });
+        bg.Apply();
+        popupStyle.normal.background = bg;
+        popupStyle.onNormal.background = bg;
+        popupStyle.padding = new RectOffset(4, 4, 4, 4);
+        return popupStyle;
+    }
+
+    static void DrawWindow(int id) {
+        if (current == null) return;
+        int picked = current.DrawPopupList();
+        if (picked != current.SelectedItemIndex && picked >= 0) {
+            current.SelectedItemIndex = picked;
+            current = null;
+            Event.current.Use();
+        }
+    }
+}
+

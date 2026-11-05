@@ -1,0 +1,169 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{41AD437E-A511-40EA-A44E-BEEBA93A0D6A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CM3D2.PartsEdit.Plugin</RootNamespace>
+    <AssemblyName>COM3D2.PartsEdit.Plugin</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;COM3D2 UNITY_5_5_OR_NEWER</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>C:/KISS/COM3D2_5/BepInEx\core\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>C:/KISS/COM3D2_5/BepInEx\core\BepInEx.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="COM3D2.API">
+      <HintPath>C:\KISS\COM3D2_5\BepInEx\plugins\COM3D2.API.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ExIni">
+      <HintPath>C:/KISS/COM3D2_5/BepInEx\plugins\UnityInjectorLoader\ExIni.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data/Managed/UnityEngine.CoreModule.dll</HintPath><Private>False</Private></Reference>
+<Reference Include="UnityEngine.IMGUIModule"><HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data/Managed/UnityEngine.IMGUIModule.dll</HintPath><Private>False</Private></Reference>
+<Reference Include="UnityEngine.TextRenderingModule"><HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data/Managed/UnityEngine.TextRenderingModule.dll</HintPath><Private>False</Private></Reference>
+<Reference Include="UnityEngine.InputLegacyModule"><HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data/Managed/UnityEngine.InputLegacyModule.dll</HintPath><Private>False</Private></Reference>
+<Reference Include="UnityEngine.UI"><HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data/Managed/UnityEngine.UI.dll</HintPath><Private>False</Private></Reference>
+<Reference Include="UnityEngine.UIModule"><HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data/Managed/UnityEngine.UIModule.dll</HintPath><Private>False</Private></Reference>
+<Reference Include="UnityEngine.ImageConversionModule"><HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data/Managed/UnityEngine.ImageConversionModule.dll</HintPath><Private>False</Private></Reference>
+<Reference Include="UnityEngine.PhysicsModule"><HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data/Managed/UnityEngine.PhysicsModule.dll</HintPath><Private>False</Private></Reference>
+<Reference Include="UnityEngine.AnimationModule"><HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data/Managed/UnityEngine.AnimationModule.dll</HintPath><Private>False</Private></Reference>
+<Reference Include="UnityEngine.AssetBundleModule"><HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data/Managed/UnityEngine.AssetBundleModule.dll</HintPath><Private>False</Private></Reference>
+<Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityInjector">
+      <HintPath>C:/KISS/COM3D2_5/BepInEx\plugins\UnityInjectorLoader\BepInEx.UnityInjectorLoader.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BoneDropDownSelect.cs" />
+    <Compile Include="BoneEdit.cs" />
+    <Compile Include="BoneGizmoRenderer.cs" />
+    <Compile Include="Common\UI\GearWindowSystem.cs" />
+    <Compile Include="Common\UI\IUIDrawer.cs" />
+    <Compile Include="Common\UI\Parts\ComboBox.cs" />
+    <Compile Include="Common\UI\Parts\RadioButton.cs" />
+    <Compile Include="Common\UI\ScaleButton.cs" />
+    <Compile Include="Common\UI\UIParams.cs" />
+    <Compile Include="Common\UI\UIRadioButton.cs" />
+    <Compile Include="Common\UI\UIUtil.cs" />
+    <Compile Include="Common\UI\UIWindow.cs" />
+    <Compile Include="Common\Util\BoneRenderer\BoneRendererAssist.cs" />
+    <Compile Include="Common\Util\BoneRenderer\BoneRendererManager.cs" />
+    <Compile Include="Common\Util\CopyTransform.cs" />
+    <Compile Include="Common\Util\ExGizmoRenderer.cs" />
+    <Compile Include="Common\Util\MaidUtil.cs" />
+    <Compile Include="Common\Util\PluginInfo.cs" />
+    <Compile Include="Common\Util\PngData.cs" />
+    <Compile Include="Data\BackUpData\BackUpBoneData.cs" />
+    <Compile Include="Data\BackUpData\BackUpData.cs" />
+    <Compile Include="Data\BackUpData\BackUpMaidData.cs" />
+    <Compile Include="Data\BackUpData\BackUpObjectData.cs" />
+    <Compile Include="Data\BackUpData\BackUpSlotData.cs" />
+    <Compile Include="Data\CommonUIData.cs" />
+    <Compile Include="Data\ObjectData.cs" />
+    <Compile Include="Data\PartsEditSet.cs" />
+    <Compile Include="Data\PresetFileData.cs" />
+    <Compile Include="Data\Setting.cs" />
+    <Compile Include="Library\Helper.cs" />
+    <Compile Include="MaidObserver.cs" />
+    <Compile Include="PartsEdit.cs" />
+    <Compile Include="PartsEditBepInPlugin.cs" />
+    <Compile Include="PartsEditPlugin.cs" />
+    <Compile Include="PresetManager.cs" />
+    <Compile Include="SetManager.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SceneDataManager.cs" />
+    <Compile Include="UI\BoneDisplaySettingUI.cs" />
+    <Compile Include="UI\BoneEditUI.cs" />
+    <Compile Include="UI\CopyUI.cs" />
+    <Compile Include="UI\ExportUI.cs" />
+    <Compile Include="UI\FinishUI.cs" />
+    <Compile Include="UI\GizmoSettingUI.cs" />
+    <Compile Include="IK\IKManager.cs" />
+    <Compile Include="IK\IKHandle.cs" />
+    <Compile Include="UI\IKUI.cs" />
+    <Compile Include="UI\ExperimentalUI.cs" />
+    <Compile Include="UI\ImportUI.cs" />
+    <Compile Include="UI\MaidObjectUI.cs" />
+    <Compile Include="UI\MaidSelectUI.cs" />
+    <Compile Include="UI\MaidSlotSelectUI.cs" />
+    <Compile Include="UI\MultipleMaidObjectSelectUI.cs" />
+    <Compile Include="UI\ObjectDataUI.cs" />
+    <Compile Include="UI\ObjectEditUI.cs" />
+    <Compile Include="UI\SettingUI.cs" />
+    <Compile Include="UI\SetUI.cs" />
+    <Compile Include="UI\SkinnedMeshObjectEditUI.cs" />
+    <Compile Include="UI\SkinnedMeshObjectSelectUI.cs" />
+    <Compile Include="UI\TargetSelectModeUI.cs" />
+    <Compile Include="UI\PhotoStudioObjectSelectUI.cs" />
+    <Compile Include="UI\UnityObjectEditUI.cs" />
+    <Compile Include="Util\BoneUtil.cs" />
+    <Compile Include="Util\ColorUtil.cs" />
+    <Compile Include="Util\IniUtil.cs" />
+    <Compile Include="Util\SlotUtil.cs" />
+    <Compile Include="Util\Text.cs" />
+    <Compile Include="Util\Tr.cs" />
+    <Compile Include="Util\ShoeProxy.cs" />
+    <Compile Include="Util\TransformUtil.cs" />
+    <Compile Include="Util\YureUtil.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="PngResource\GearIcon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="README.MD" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    
+  </PropertyGroup>
+</Project>

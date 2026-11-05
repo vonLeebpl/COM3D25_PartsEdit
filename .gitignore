@@ -1,0 +1,10 @@
+# Visual Studio / build
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.pdb
+*.dll
+*.new
+*.bak
