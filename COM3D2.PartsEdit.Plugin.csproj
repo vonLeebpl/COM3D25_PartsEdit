@@ -136,6 +136,7 @@
     <Compile Include="UI\IKUI.cs" />
     <Compile Include="UI\ExperimentalUI.cs" />
     <Compile Include="UI\ImportUI.cs" />
+    <Compile Include="UI\LibraryUI.cs" />
     <Compile Include="UI\MaidObjectUI.cs" />
     <Compile Include="UI\MaidSelectUI.cs" />
     <Compile Include="UI\MaidSlotSelectUI.cs" />

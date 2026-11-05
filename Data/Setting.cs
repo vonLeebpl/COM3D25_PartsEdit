@@ -137,6 +137,7 @@ namespace CM3D2.PartsEdit.Plugin {
         IKLimit,
         IKGravity,
         Experimental,
+        Library,
     }
 
     enum BoneDisplay {
