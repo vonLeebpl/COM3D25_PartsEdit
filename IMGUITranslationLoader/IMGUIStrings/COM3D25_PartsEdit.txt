@@ -1,0 +1,135 @@
+﻿非表示	Hide
+表示	Display
+選択可	Select
+無し	None
+位置	Pos.
+回転	Rot.
+拡縮	Scl.
+メイドパーツ	Maid Parts
+複数メイド	Multi Maids
+設定	Config
+ボーン表示	Bone Display
+座標タイプ	Coord. Type
+ギズモタイプ	Gizmo Type
+オブジェクト選択モード	Obj. Select. Mode
+操作	Operate
+メイド:	Maid:
+未選択	Deselect
+スロット:	slot:
+プリセット	Preset
+揺れボーン	Shaking Bone
+ボーン:未選択	Bone:not selected
+リセット	Reset
+終了	End
+オブジェクト:	Object:
+プリセットファイル	Preset File
+キャンセル	Cancel
+ファイル名	File Name
+同カテ	Same category
+選択	Selection
+同名	same name
+E_ｴﾛ椅子4-1膝立	E_Erotic Chair 4-1 Kneeling Position
+E_ｴﾛ椅子4-1膝立+	E_Erotic Chair 4-1 Kneeling +
+E_ｴﾛ椅子4-2寝	E_Erotic Chair 4-2 Sleep
+E_ｴﾛ椅子4-3寝	E_Erotic Chair 4-3 Sleep
+E_ｴﾛ椅子4-3寝+	E_Erotic Chair 4-3 Sleep+
+E_ｴﾛ椅子4-4立	E_Erotic Chair 4-4 Standing
+E_ｴﾛ椅子4-5吊	E_Erotic Chair 4-5 Suspension
+E_ｴﾛ椅子4-6寝	E_Erotic Chair 4-6 Sleep
+E_ｴﾛ椅子4-7吊	E_Erotic Chair 4-7 Suspension
+猫耳機械拘束2_1	Cat Ear Mechanical Restraint 2_1
+猫耳機械拘束2_2	Cat Ear Mechanical Restraint 2_2
+猫耳機械拘束2_3	Cat Ear Mechanical Restraint 2_3
+猫耳機械拘束2オプション_1	Cat Ear Mechanical Restraint 2 Option_1
+猫耳機械拘束2オプション_2	Cat Ear Mechanical Restraint Option 2
+詳細	Detailed
+ボーン表示設定	Bone Display Settings
+通常ボーン色	Normal bone color
+選択ボーン色	Selected Bone Color
+選択キー	Selection key
+メイド体ボーン表示	Maid Bone Display
+戻る	Back
+ギズモ表示設定	Gizmo Display Settings
+移動量減少キー	Movement Reduction Key
+移動量増加キー	Movement Increase Key
+トランスフォームリセット	Transform reset
+ボーン編集	Bone edit
+位置リセット	Position reset
+回転リセット	Rotation reset
+拡縮リセット	Scale reset
+絞り込み	Narrow down
+カテゴリー	Category
+オブジェクト名	Object name
+ファイル選択	File select
+ボーン:	Bone:
+メイド選択	Maid selection
+スロット選択	Slot selection
+ベース	base
+オブジェクト一覧取得	Get object list
+オブジェクト選択	object selection
+オブジェクト一覧再取得	Re-obtain object list
+読み込み中のメイドから、別のメイドへカテゴリ編集をコピーします。	Copy category edits from the loaded maid to another maid.
+揺れ状態もコピー	Also copy sway (yure) state
+オブジェクト名が違う場合はスキップ	Skip if object names differ
+コピー元メイドを選択してください。	Please select the source maid.
+チェックしたカテゴリをまとめて保存します。各カテゴリは通常のxmlのままです。	Saves all checked categories together. Each category stays a normal xml.
+先にメイドを選択してください。	Please select a maid first.
+読込	Load
+削除時に構成xmlも消す	Also delete the config xml when deleting
+このメイドにセットは未設定です。	No set is assigned to this maid.
+このメイドの自動読込: 	Auto-load for this maid:
+このメイドにこのセットを自動読込	Auto-load this set for this maid
+自動読込を解除	Clear auto-load
+先端を拘束	Pin tip
+拘束解除	Unpin
+ポール	Pole
+ハンドル非表示	Hide handle
+IK凍結	Freeze IK
+重力無視	Ignore gravity
+角度凍結	Freeze angle
+名前変更	Rename
+先端をこのボーンへ	Set tip to this bone
+IKを含める	Include IK
+ギズモ表示	Gizmo Display
+選択ハイライト色	Selection Highlight Color
+IKハンドル色	IK Handle Color
+スタジオ	Studio
+背景	Background
+セット	Set
+コピー	Copy
+セット保存	Save Set
+セット読込	Load Set
+セット削除	Delete Set
+自動読込	Auto-load
+名前	Name
+全て	All
+解除	Release
+コピー元	Copy From
+コピー先	Copy To
+カテゴリ	Category
+IK重力	IK Gravity
+強度	Strength
+方向	Direction
+床	Floor
+実験	Experimental
+物理	Physics
+当たり判定	Collision
+新規IK	New IK
+先端ボーンを選択	Select tip bone
+先端を確定	Confirm tip
+根元ボーンを選択	Select root bone
+根元を確定	Confirm root
+先端: 	Tip:
+根元	Root
+追加	Add
+IK一覧	IK List
+制限	Limit
+削除	Delete
+連結元	Chain From
+IK保存	Save IK
+解決	Solve
+最小	Min
+最大	Max
+一括	Bulk
+靴ボーン独立	Independent shoe bones
+独立ボーン	Independent bones

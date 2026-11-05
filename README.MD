@@ -24,8 +24,9 @@ This is a port and extension of earlier PartsEdit work, see [Credits](#credits).
 
 ## Install
 
-Copy `COM3D25_PartsEdit.dll` into `BepInEx\plugins\PartsEdit\` and the translation file into
-`IMGUITranslationLoader\IMGUIStrings\`. Settings and presets are stored in `BepInEx\config\PartsEdit\`.
+Copy `COM3D25_PartsEdit.dll` into `BepInEx\plugins\PartsEdit\` and the translation file from this repository,
+`IMGUITranslationLoader\IMGUIStrings\COM3D25_PartsEdit.txt`, into the same path in the game folder
+(the file name must match the assembly name). Settings and presets are stored in `BepInEx\config\PartsEdit\`.
 
 ## Build
 
