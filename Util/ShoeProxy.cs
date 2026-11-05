@@ -143,7 +143,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
                 if (changed) renderers[r].bones = bones;
             }
-            Debug.Log("PartsEdit: independent bones enabled on '" + obj.name + "', replaced " + replaced + " bone refs, created " + marker.proxies.Count + " nodes; bones: " + string.Join(", ", names.ToArray()));
+            Log.Info("independent bones enabled on '" + obj.name + "', replaced " + replaced + " bone refs, created " + marker.proxies.Count + " nodes; bones: " + string.Join(", ", names.ToArray()));
             return replaced;
         }
 
@@ -161,7 +161,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 if (marker.proxies[i]) Object.Destroy(marker.proxies[i]);
             }
             Object.Destroy(marker);
-            Debug.Log("PartsEdit: independent bones disabled on '" + obj.name + "'");
+            Log.Info("independent bones disabled on '" + obj.name + "'");
         }
 
         static Transform GetProxy(Transform real, Transform root, HashSet<Transform> used, Dictionary<Transform, Transform> map, ShoeProxyMarker marker) {

@@ -133,7 +133,7 @@ namespace CM3D2.PartsEdit.Plugin {
                     if (go) found.Add(go);
                 }
             } catch (Exception e) {
-                Debug.Log("PartsEdit MPS prop scan failed: " + e.Message);
+                Log.Info("MPS prop scan failed: " + e.Message);
             }
             return found;
         }

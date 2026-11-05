@@ -76,7 +76,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 KeyValuePair<string, XElement[]> hArg = new KeyValuePair<string, XElement[]>(PluginInfo.Name, phXElements);
                 hPluginStudioExCoPluginManager.SendMessage("OnStudioExCallWriteXML", hArg);
             }catch(Exception e) {
-                Debug.Log(e);
+                Log.Error(e.ToString());
             }
         }
 
@@ -94,7 +94,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 KeyValuePair<string, XElement[]> hArg = new KeyValuePair<string, XElement[]>(PluginInfo.Name, phXElements);
                 hPluginStudioExCoPluginManager.SendMessage("OnStudioExCallWriteXML", hArg);
             } catch (Exception e) {
-                Debug.Log(e);
+                Log.Error(e.ToString());
             }
         }
 
@@ -109,7 +109,7 @@ namespace CM3D2.PartsEdit.Plugin {
                     SceneDataManager.SetSceneXmlData(hElementGroupRoot);
                 }
             }catch(Exception e) {
-                Debug.Log(e);
+                Log.Error(e.ToString());
             }
         }
 
@@ -124,7 +124,7 @@ namespace CM3D2.PartsEdit.Plugin {
                     SceneDataManager.SetSceneXmlData(hElementGroupRoot);
                 }
             } catch (Exception e) {
-                Debug.Log(e);
+                Log.Error(e.ToString());
             }
         }
 

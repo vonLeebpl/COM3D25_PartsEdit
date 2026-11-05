@@ -138,7 +138,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 Transform trs = bone;
                 while (trs != CommonUIData.obj.transform) {
                     if (!trs) {
-                        Debug.Log("PartsEdit: bone is not under the root object: " + bone.name); // ja: ルートオブジェクト配下にありません
+                        Log.Info("bone is not under the root object: " + bone.name); // ja: ルートオブジェクト配下にありません
                         return null;
                     }
                     if (trsHash.Contains(trs)) break;

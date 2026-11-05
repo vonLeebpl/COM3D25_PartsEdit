@@ -190,7 +190,7 @@ namespace CM3D2.PartsEdit.Plugin {
                     // Unity 2022 / COM3D2.5: raycast w cienkie collidery nie trafial, wiec wybieramy
                     // najblizszy segment kosci w przestrzeni ekranu.
                     Transform picked = PickBoneByScreen();
-                    Debug.Log("PartsEdit: bone pick -> " + (picked ? toFromBoneDic[picked].name : "none"));
+                    Log.Info("bone pick -> " + (picked ? toFromBoneDic[picked].name : "none"));
                     if (picked) BoneClick(picked);
                 }
             }else {

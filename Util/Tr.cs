@@ -27,7 +27,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 string name = Assembly.GetExecutingAssembly().GetName().Name + ".txt";
                 string path = Path.Combine(dir, name);
                 if (!File.Exists(path)) {
-                    Debug.LogWarning("PartsEdit: translation file not found: " + path);
+                    Log.Warn("translation file not found: " + path);
                     return;
                 }
                 foreach (string raw in File.ReadAllLines(path, System.Text.Encoding.UTF8)) {
@@ -41,7 +41,7 @@ namespace CM3D2.PartsEdit.Plugin {
                     dic[key] = val;
                 }
             } catch (Exception e) {
-                Debug.LogWarning("PartsEdit: failed to load translation: " + e.Message);
+                Log.Warn("failed to load translation: " + e.Message);
             }
         }
     }

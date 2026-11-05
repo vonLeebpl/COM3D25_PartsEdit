@@ -154,7 +154,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 Transform trs = bone;
                 while (trs != rootBone) {
                     if (!trs) {
-                        Debug.Log("PartsEdit: bone is not under the root object: " + bone.name); // ja: ルートオブジェクト配下にありません
+                        Log.Info("bone is not under the root object: " + bone.name); // ja: ルートオブジェクト配下にありません
                         return null;
                     }
                     if (trsHash.Contains(trs)) break;
@@ -253,8 +253,8 @@ namespace CM3D2.PartsEdit.Plugin {
             }
 
             if (tbs.m_strModelFileName != modelFileName) {
-                Debug.Log("PartsEdit: " + (string)categoryXml + " model file changed since save, skipped."); // ja: カテゴリのmodelファイルがセーブ時と変わっているため、ロードされません
-                Debug.Log(modelFileName + "→" + tbs.m_strModelFileName);
+                Log.Info("" + (string)categoryXml + " model file changed since save, skipped."); // ja: カテゴリのmodelファイルがセーブ時と変わっているため、ロードされません
+                Log.Info(modelFileName + "→" + tbs.m_strModelFileName);
                 return;
             }
 

@@ -85,7 +85,7 @@ namespace CM3D2.PartsEdit.Plugin {
                     files[key] = file ?? new IKFile { objectName = key };
                 }
             } catch (Exception e) {
-                Debug.Log("PartsEdit IK load failed: " + e.Message);
+                Log.Info("IK load failed: " + e.Message);
                 files[key] = new IKFile { objectName = key };
             }
         }

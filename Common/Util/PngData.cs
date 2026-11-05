@@ -16,7 +16,7 @@ internal class PngData {
         Stream pngStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(full);
         if (pngStream == null) pngStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("PngResource." + name);
         if (pngStream == null) {
-            Debug.LogWarning("PartsEdit: icon resource not found: " + full);
+            Log.Warn("icon resource not found: " + full);
             pngByteData = new byte[0];
             return;
         }
