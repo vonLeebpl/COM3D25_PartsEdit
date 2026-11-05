@@ -128,7 +128,7 @@ namespace CM3D2.PartsEdit.Plugin {
 
         static string Short(string s, int max) {
             if (string.IsNullOrEmpty(s) || s.Length <= max) return s;
-            return s.Substring(0, max - 3) + "...";
+            return s.Substring(0, max - 1) + "…";
         }
 
         static string ResultText(List<ApplyResult> results) {
