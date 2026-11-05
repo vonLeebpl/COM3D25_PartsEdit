@@ -84,11 +84,28 @@ namespace CM3D2.PartsEdit.Plugin {
                 bool active = ShoeProxy.IsActive(CommonUIData.obj);
                 bool next = GUILayout.Toggle(active, "", UIParams.Instance.tStyle);
                 if (next != active) {
-                    if (next) ShoeProxy.Enable(CommonUIData.obj); else ShoeProxy.Disable(CommonUIData.obj);
+                    if (next) {
+                        List<Transform> restored = new List<Transform>();
+                        ShoeProxy.Enable(CommonUIData.obj, restored, true);
+                        RegisterRestoredBackups(restored);
+                    } else {
+                        ShoeProxy.Disable(CommonUIData.obj);
+                    }
                     BoneEdit.requestRebuild = true;
                 }
             }
             GUILayout.EndHorizontal();
+        }
+
+        // Przywrocone korekty maja miec kopie zapasowa (przyciski R / Revert), a ich "oryginalem" jest poza identycznosciowa nowego zastepnika.
+        void RegisterRestoredBackups(List<Transform> restored) {
+            foreach (Transform t in restored) {
+                BackUpBoneData data = BackUpData.GetOrAddMaidBoneData(CommonUIData.maid, CommonUIData.slotNo, CommonUIData.obj, t);
+                if (!data.changedPos && t.localPosition != Vector3.zero) { data.position = Vector3.zero; data.changedPos = true; }
+                if (!data.changedRot && t.localRotation != Quaternion.identity) { data.rotation = Quaternion.identity; data.changedRot = true; }
+                if (!data.changedScl && t.localScale != Vector3.one) { data.scale = Vector3.one; data.changedScl = true; }
+            }
+            BackUpData.Refresh();
         }
 
         void DrawImportExport() {

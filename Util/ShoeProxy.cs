@@ -21,6 +21,17 @@ namespace CM3D2.PartsEdit.Plugin {
         public List<GameObject> proxies = new List<GameObject>();
     }
 
+    // Zapamietane pozy edytowalnych zastepnikow po wylaczeniu (zyje na obiekcie, ginie razem z nim).
+    // Dzieki temu ponowne wlaczenie Independent bones przywraca wczesniejsze korekty.
+    internal class ShoeProxyStash : MonoBehaviour {
+        public struct Pose {
+            public Vector3 Position;
+            public Quaternion Rotation;
+            public Vector3 Scale;
+        }
+        public Dictionary<string, Pose> Poses = new Dictionary<string, Pose>();
+    }
+
     // Ustawia proxy wzgledem proxy przodka tak, aby jego macierz swiata odpowiadala prawdziwej kosci
     // (pozycja/rotacja/skala kosci "source" wyrazona w ukladzie prawdziwego przodka "reference").
     [DefaultExecutionOrder(10000)]
@@ -115,7 +126,9 @@ namespace CM3D2.PartsEdit.Plugin {
             BoneEdit.requestRebuild = true;
         }
 
-        public static int Enable(GameObject obj) {
+        // restored (opcjonalnie) dostaje wezly, ktorym przywrocono zapamietane korekty (zeby wywolujacy mogl zarejestrowac kopie zapasowe).
+        // restoreStash=true tylko przy recznym wlaczeniu z przelacznika; przy imporcie/wczytaniu dane same ustalaja wartosci.
+        public static int Enable(GameObject obj, List<Transform> restored = null, bool restoreStash = false) {
             if (!obj || IsActive(obj)) return 0;
 
             SkinnedMeshRenderer[] renderers = obj.GetComponentsInChildren<SkinnedMeshRenderer>(true);
@@ -143,6 +156,23 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
                 if (changed) renderers[r].bones = bones;
             }
+            if (restoreStash) {
+                ShoeProxyStash stash = obj.GetComponent<ShoeProxyStash>();
+                if (stash != null && stash.Poses.Count > 0) {
+                    int back = 0;
+                    foreach (GameObject go in marker.proxies) {
+                        ShoeProxyStash.Pose pose;
+                        if (go && stash.Poses.TryGetValue(go.name, out pose)) {
+                            go.transform.localPosition = pose.Position;
+                            go.transform.localRotation = pose.Rotation;
+                            go.transform.localScale = pose.Scale;
+                            if (restored != null) restored.Add(go.transform);
+                            back++;
+                        }
+                    }
+                    Log.Info("independent bones: restored " + back + " saved adjustments on '" + obj.name + "'");
+                }
+            }
             Log.Info("independent bones enabled on '" + obj.name + "', replaced " + replaced + " bone refs, created " + marker.proxies.Count + " nodes; bones: " + string.Join(", ", names.ToArray()));
             return replaced;
         }
@@ -151,6 +181,21 @@ namespace CM3D2.PartsEdit.Plugin {
             if (!obj) return;
             ShoeProxyMarker marker = obj.GetComponent<ShoeProxyMarker>();
             if (marker == null) return;
+
+            // zapamietaj korekty (tylko wezly edytowalne, nie "follow"), zeby dalo sie je przywrocic po ponownym wlaczeniu
+            ShoeProxyStash stash = obj.GetComponent<ShoeProxyStash>();
+            if (stash == null) stash = obj.AddComponent<ShoeProxyStash>();
+            stash.Poses.Clear();
+            foreach (GameObject go in marker.proxies) {
+                if (!go || !go.name.EndsWith(Suffix)) continue;
+                Transform t = go.transform;
+                if (t.localPosition == Vector3.zero && t.localRotation == Quaternion.identity && t.localScale == Vector3.one) continue;
+                ShoeProxyStash.Pose pose = new ShoeProxyStash.Pose();
+                pose.Position = t.localPosition;
+                pose.Rotation = t.localRotation;
+                pose.Scale = t.localScale;
+                stash.Poses[go.name] = pose;
+            }
 
             for (int r = 0; r < marker.renderers.Length; r++) {
                 if (marker.renderers[r] && marker.originalBones[r] != null) {
