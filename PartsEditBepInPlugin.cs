@@ -21,6 +21,7 @@ namespace CM3D2.PartsEdit.Plugin {
             IniUtil.InitFile(Path.Combine(configDir, "COM3D2.PartsEdit.Plugin.ini"));
             Setting.LoadIni();
             Setting.SaveIni();
+            Db.PartsEditStore.Init(configDir, PresetManager.directoryPath);
 
             GameObject obj = new GameObject("PartsEdit.Plugin");
             DontDestroyOnLoad(obj);

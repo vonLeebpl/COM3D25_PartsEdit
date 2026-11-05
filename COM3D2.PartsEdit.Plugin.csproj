@@ -51,6 +51,10 @@
       <HintPath>C:\KISS\COM3D2_5\BepInEx\plugins\COM3D2.API.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>C:/KISS/COM3D2_5/COM3D2x64_Data/Managed/Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="ExIni">
       <HintPath>C:/KISS/COM3D2_5/BepInEx\plugins\UnityInjectorLoader\ExIni.dll</HintPath>
       <Private>False</Private>
@@ -150,6 +154,12 @@
     <Compile Include="Util\IniUtil.cs" />
     <Compile Include="Util\SlotUtil.cs" />
     <Compile Include="Util\Text.cs" />
+    <Compile Include="Db\Records.cs" />
+    <Compile Include="Db\Entities.cs" />
+    <Compile Include="Db\PartsEditDb.cs" />
+    <Compile Include="Db\DbConvert.cs" />
+    <Compile Include="Db\LegacyMigration.cs" />
+    <Compile Include="Db\PartsEditStore.cs" />
     <Compile Include="Util\Log.cs" />
     <Compile Include="Util\Tr.cs" />
     <Compile Include="Util\ShoeProxy.cs" />
