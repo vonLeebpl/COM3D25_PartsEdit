@@ -354,8 +354,14 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
                 appliedAutoload.Add(guid);
                 watches.Remove(guid);
-                string setName = GetAutoloadSet(maid);
-                if (!string.IsNullOrEmpty(setName)) LoadSet(maid, setName, false, true);
+                if (Db.LibraryService.HasAutoLoad(maid)) {
+                    // autoload z biblioteki (PartsEdit.db.json)
+                    foreach (Db.ApplyResult r in Db.LibraryService.ApplyMaidProfile(maid)) Log.Info("Autoload " + r);
+                } else {
+                    // stara sciezka: zestaw z autoload.xml (dla pokojowek, ktorych baza nie obejmuje)
+                    string setName = GetAutoloadSet(maid);
+                    if (!string.IsNullOrEmpty(setName)) LoadSet(maid, setName, false, true);
+                }
             }
             appliedAutoload.RemoveWhere(guid => !stillHere.Contains(guid));
             List<string> gone = new List<string>();
