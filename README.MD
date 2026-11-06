@@ -211,11 +211,11 @@ When are conditions evaluated
 
 ### Dances and other scenes
 
-Auto-load works in the background and does not need the PartsEdit window, so modifications are also applied to a maid in a
-dance or another scene where the window cannot be opened (the gear menu is usually not available there). Tested in a dance
-with an outfit assigned by a mod that sets outfits per scene: the items follow the animation. To use it:
+Auto-load works in the background and does not need the PartsEdit window, so modifications are applied to a maid in a
+dance or another scene by themselves. Tested in a dance with an outfit assigned by a mod that sets outfits per scene: the
+items follow the animation. To use it:
 
-1. Prepare and save the modifications earlier, in the maid editor, Photo Mode or any scene where the window opens.
+1. Prepare and save the modifications first (maid editor, Photo Mode or any scene).
 2. Turn **Auto-load** on for that maid and give her the modifications (or a set).
 3. The maid in the scene must be the same character (the same GUID) and wear an item that fits the modification's conditions.
    Characters generated only for a scene have other GUIDs, so assigned modifications do not apply to them.
