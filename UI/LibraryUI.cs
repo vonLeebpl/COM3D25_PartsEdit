@@ -101,7 +101,11 @@ namespace CM3D2.PartsEdit.Plugin {
         }
 
         void DrawTabs() {
-            string[] names = new string[] { TL.TabMaid, string.Format(TL.TabLibraryFmt, Db.Entries.Count), string.Format(TL.TabSetsFmt, Db.Sets.Count) };
+            // liczniki na zakladkach uwzgledniaja filtr wlasciciela (tylko ta pokojowka / wszystkie), tak jak listy pod nimi
+            Maid tabMaid = CommonUIData.maid;
+            int entryCount = Db.Entries.Values.Count(en => showAll || Mine(tabMaid, en));
+            int setCount = Db.Sets.Values.Count(st => showAll || MineSet(tabMaid, st));
+            string[] names = new string[] { TL.TabMaid, string.Format(TL.TabLibraryFmt, entryCount), string.Format(TL.TabSetsFmt, setCount) };
             int selected = GUILayout.Toolbar((int)tab, names, UIParams.Instance.tbStyle);
             if (selected != (int)tab) {
                 tab = (Tab)selected;
