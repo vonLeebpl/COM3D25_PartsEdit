@@ -24,7 +24,10 @@ namespace CM3D2.PartsEdit.Plugin {
 
         public static SettingValue<Color> normalBoneColor = new SettingValue<Color>(Color.white);
         public static SettingValue<Color> selectBoneColor = new SettingValue<Color>(Color.red);
-        public static SettingValue<Color> highlightColor = new SettingValue<Color>(ColorUtil.FromHex("b80000"));
+        // Kolor podswietlenia interfejsu (zaznaczone przyciski, wybrane pozycje list). Domyslnie chlodny szary; dawny domyslny
+        // czerwony (#B80000) zapisany w ini jest zamieniany na ten szary przy wczytaniu.
+        public const string DefaultHighlightHex = "#6F7078";
+        public static SettingValue<Color> highlightColor = new SettingValue<Color>(ColorUtil.ParseColor(DefaultHighlightHex));
         public static SettingValue<Color> ikChainColor = new SettingValue<Color>(ColorUtil.FromHex("0000bf"));
         public static bool experimental = false;
         public static float physicsRadius = 0.05f;
@@ -35,6 +38,8 @@ namespace CM3D2.PartsEdit.Plugin {
         public static float gravityX, gravityY = -1f, gravityZ;
         public static float windowWidth = 720f;
         public static float windowHeight = 850f;
+        // mnoznik rozmiaru czcionki przyciskow wzgledem czcionki interfejsu (ustawiany przyciskami A- / A+ w oknie Library)
+        public static float buttonFontScale = 0.80f;
 
         public static SettingValue<BodyBoneDisplay> bodyBoneDisplay = new SettingValue<BodyBoneDisplay>(BodyBoneDisplay.Visible);
 
@@ -75,10 +80,18 @@ namespace CM3D2.PartsEdit.Plugin {
             boneSelectKey = (KeyCode)IniUtil.GetIntValue("BoneDisplay", "BoneSelectKey", (int)KeyCode.LeftAlt);
             normalBoneColor = new SettingValue<Color>(ColorUtil.GetColorFromName(IniUtil.GetStringValue("BoneDisplay", "NormalBoneColor", "white")));
             selectBoneColor = new SettingValue<Color>(ColorUtil.GetColorFromName(IniUtil.GetStringValue("BoneDisplay", "SelectBoneColor", "red")));
-            highlightColor = new SettingValue<Color>(ColorUtil.ParseColor(IniUtil.GetStringValue("BoneDisplay", "HighlightColor", "#b80000")));
+            string highlightHex = IniUtil.GetStringValue("BoneDisplay", "HighlightColor", DefaultHighlightHex);
+            if (highlightHex.Trim().TrimStart('#').ToLowerInvariant() == "b80000") highlightHex = DefaultHighlightHex;
+            highlightColor = new SettingValue<Color>(ColorUtil.ParseColor(highlightHex));
             ikChainColor = new SettingValue<Color>(ColorUtil.ParseColor(IniUtil.GetStringValue("BoneDisplay", "IKChainColor", "#0000bf")));
             windowWidth = IniUtil.GetFloatValue("Window", "Width", 720f);
             windowHeight = IniUtil.GetFloatValue("Window", "Height", 850f);
+            // zapisywane w kulturze niezmiennej (kropka), zeby ini nie zalezalo od ustawien regionalnych
+            float scale;
+            if (float.TryParse(IniUtil.GetStringValue("Window", "ButtonFontScale", ""), System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out scale) && scale >= 0.5f && scale <= 1.5f) {
+                buttonFontScale = scale;
+            }
             bodyBoneDisplay = new SettingValue<BodyBoneDisplay>((BodyBoneDisplay)IniUtil.GetIntValue("BoneDisplay", "BodyBoneDisplay", (int)BodyBoneDisplay.Visible));
         }
 
@@ -113,6 +126,7 @@ namespace CM3D2.PartsEdit.Plugin {
             IniUtil.preferences["BoneDisplay"]["IKChainColor"].Value = ColorUtil.ToHex(ikChainColor.GetValue());
             IniUtil.preferences["Window"]["Width"].Value = windowWidth.ToString();
             IniUtil.preferences["Window"]["Height"].Value = windowHeight.ToString();
+            IniUtil.preferences["Window"]["ButtonFontScale"].Value = buttonFontScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
             IniUtil.preferences["BoneDisplay"]["BodyBoneDisplay"].Value = ((int)bodyBoneDisplay.GetValue()).ToString();
         }
 
@@ -131,12 +145,12 @@ namespace CM3D2.PartsEdit.Plugin {
         Export,
         BoneDisplaySetting,
         GizmoSetting,
-        Set,
         Copy,
         IK,
         IKLimit,
         IKGravity,
         Experimental,
+        Library,
     }
 
     enum BoneDisplay {

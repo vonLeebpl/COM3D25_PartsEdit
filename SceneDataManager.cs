@@ -302,9 +302,9 @@ namespace CM3D2.PartsEdit.Plugin {
 
                     Transform bone;
                     if (slotID == (int)EXSlot.Base) {
-                        bone = CMT.SearchObjName(obj.transform, (string)nameXml, true);
+                        bone = CMT.SearchObjName(obj.transform, Db.ProxyNames.Normalize((string)nameXml), true);
                     } else {
-                        bone = CMT.SearchObjName(obj.transform, (string)nameXml, false);
+                        bone = CMT.SearchObjName(obj.transform, Db.ProxyNames.Normalize((string)nameXml), false);
                     }
                     if (bone == null) continue;
 

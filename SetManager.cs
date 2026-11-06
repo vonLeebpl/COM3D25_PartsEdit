@@ -269,7 +269,11 @@ namespace CM3D2.PartsEdit.Plugin {
                 obj.transform.localScale = objectData.rootData.scale;
             }
             bool deep = slotNo == (int)EXSlot.Base;
+            foreach (ObjectData.TransformData t in objectData.transformDataList) t.name = Db.ProxyNames.Normalize(t.name); // stare nazwy _ShoeAdj
+            bool hasProxyData = objectData.transformDataList.Any(t => Db.ProxyNames.IsEdit(t.name));
+            int skippedStale = 0;
             foreach (ObjectData.TransformData trsData in objectData.transformDataList) {
+                if (ShoeProxy.SkipOnApply(trsData.name, hasProxyData)) { skippedStale++; continue; }
                 Transform bone = CMT.SearchObjName(obj.transform, trsData.name, deep);
                 if (!bone) continue;
                 BackUpBoneData boneData = BackUpData.GetOrAddMaidBoneData(maid, slotNo, obj, bone);
@@ -280,6 +284,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 if (!boneData.changedScl) { boneData.scale = bone.localScale; boneData.changedScl = true; }
                 bone.localScale = trsData.scale;
             }
+            if (skippedStale > 0) Log.Info("Apply '" + obj.name + "': skipped " + skippedStale + " stale bone poses (follow nodes / real bones)");
         }
 
         static string autoloadPath {
@@ -335,6 +340,11 @@ namespace CM3D2.PartsEdit.Plugin {
                 string guid = MaidGuid(maid);
                 if (string.IsNullOrEmpty(guid)) continue;
                 stillHere.Add(guid);
+                if (Db.LibraryService.HasAutoLoad(maid)) {
+                    // pokojowki z biblioteki: synchronizacja z ubraniem (warunki wpisow), nie jednorazowy autoload
+                    Db.LibraryService.TickSync(maid, now);
+                    continue;
+                }
                 if (appliedAutoload.Contains(guid)) continue;
                 if (!MaidBodyReady(maid)) continue;
                 AutoloadWatch watch;
@@ -354,8 +364,14 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
                 appliedAutoload.Add(guid);
                 watches.Remove(guid);
-                string setName = GetAutoloadSet(maid);
-                if (!string.IsNullOrEmpty(setName)) LoadSet(maid, setName, false, true);
+                if (Db.LibraryService.HasAutoLoad(maid)) {
+                    // autoload z biblioteki (PartsEdit.db.json)
+                    foreach (Db.ApplyResult r in Db.LibraryService.ApplyMaidProfile(maid)) Log.Info("Autoload " + r);
+                } else {
+                    // stara sciezka: zestaw z autoload.xml (dla pokojowek, ktorych baza nie obejmuje)
+                    string setName = GetAutoloadSet(maid);
+                    if (!string.IsNullOrEmpty(setName)) LoadSet(maid, setName, false, true);
+                }
             }
             appliedAutoload.RemoveWhere(guid => !stillHere.Contains(guid));
             List<string> gone = new List<string>();

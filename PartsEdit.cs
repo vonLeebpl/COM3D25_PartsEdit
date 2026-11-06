@@ -19,7 +19,7 @@ namespace CM3D2.PartsEdit.Plugin
 
         ImportUI importUI = new ImportUI();
         ExportUI exportUI = new ExportUI();
-        SetUI setUI = new SetUI();
+        LibraryUI libraryUI = new LibraryUI();
         CopyUI copyUI = new CopyUI();
         IKUI ikUI = new IKUI();
         IKLimitUI ikLimitUI = new IKLimitUI();
@@ -127,6 +127,10 @@ namespace CM3D2.PartsEdit.Plugin
                 {
                     importUI.Reset();
                 }
+                if (mode == Mode.Library)
+                {
+                    libraryUI.OnEnter();
+                }
             }
             switch (Setting.mode)
             {
@@ -153,8 +157,8 @@ namespace CM3D2.PartsEdit.Plugin
                 case Mode.Export:
                     exportUI.Draw();
                     break;
-                case Mode.Set:
-                    setUI.Draw();
+                case Mode.Library:
+                    libraryUI.Draw();
                     break;
                 case Mode.Copy:
                     copyUI.Draw();

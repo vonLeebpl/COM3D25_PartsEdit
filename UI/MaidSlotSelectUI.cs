@@ -19,6 +19,10 @@ namespace CM3D2.PartsEdit.Plugin {
 
         int selectSlotId = -2;
 
+        // Zadanie wyboru slotu z innego ekranu (np. przycisk Edit w oknie Library). ShowScroll zwraca wlasny indeks combo,
+        // wiec sama zmiana CommonUIData.slotNo zostalaby nadpisana - wybor trzeba przeprowadzic przez ten selektor.
+        public static int requestedSlot = int.MinValue;
+
         public void Draw() {
             GUILayout.BeginHorizontal();
             {
@@ -57,6 +61,11 @@ namespace CM3D2.PartsEdit.Plugin {
                     selectSlotId = -2;
                     ResetSlotList();
                 } else if (CheckActiveSlotChange()) {
+                    ResetSlotList();
+                }
+                if (requestedSlot != int.MinValue) {
+                    selectSlotId = requestedSlot;
+                    requestedSlot = int.MinValue;
                     ResetSlotList();
                 }
                 //selectSlotId = combo.ShowScroll(GUILayout.ExpandWidth(true));
@@ -120,6 +129,11 @@ namespace CM3D2.PartsEdit.Plugin {
             //    slotNameList[i] = new GUIContent(maid.body0.goSlot[activeSlotIdList[i]].Category);
             //}
             combo = new ComboBoxLO(new GUIContent(selectSlotName), slotNameList, UIParams.Instance.bStyle, UIParams.Instance.winStyle, UIParams.Instance.listStyle, false);
+            // indeks combo musi odpowiadac wyborowi (inaczej ShowScroll zwroci 0 i wybor zostanie skasowany po odbudowie listy)
+            if (CommonUIData.maid) {
+                int index = selectSlotId == -1 ? 1 : (activeSlotIdList.Contains(selectSlotId) ? activeSlotIdList.IndexOf(selectSlotId) + 2 : 0);
+                if (index < slotNameList.Length) combo.SelectedItemIndex = index;
+            }
         }
 
         bool CheckActiveSlotChange() {

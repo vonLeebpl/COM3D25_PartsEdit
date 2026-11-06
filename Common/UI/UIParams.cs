@@ -41,6 +41,13 @@ internal class UIParams {
     public readonly GUIStyle bStyle = new GUIStyle();
     public readonly GUIStyle bStyleSC = new GUIStyle();
     public readonly GUIStyle bStyleL = new GUIStyle();
+    // przyciski grup wyboru (zamiast radio-buttonow): wcisniety = kolor wyrozniajacy, reszta wylaczona
+    public readonly GUIStyle tbStyle = new GUIStyle();
+    // ten sam wyglad, tekst do lewej: przyciski rozwijajace listy i dodajace (wcisniety = lista otwarta)
+    public readonly GUIStyle tbStyleL = new GUIStyle();
+    // tla obszarow (sekcje strony Maid, wiersze list - naprzemiennie): jasniejszy i ciemniejszy odcien szarosci
+    public readonly GUIStyle areaStyleA = new GUIStyle();
+    public readonly GUIStyle areaStyleB = new GUIStyle();
 
     public readonly GUIStyle tStyle = new GUIStyle();
     public readonly GUIStyle tStyleS = new GUIStyle();
@@ -153,7 +160,12 @@ internal class UIParams {
     }
 
     bool skinReady;
+    bool tbBuilt;
     public void EnsureSkin() {
+        if (!tbBuilt) {
+            tbBuilt = true;
+            BuildToolbarStyle(CM3D2.PartsEdit.Plugin.Setting.highlightColor.GetValue());
+        }
         if (skinReady) return;
         if (GUI.skin == null || GUI.skin.button == null || GUI.skin.button.normal.background == null) return;
         CopySkin(bStyle, GUI.skin.button);
@@ -194,11 +206,11 @@ internal class UIParams {
         listStyle.onNormal.background = tex;
         listStyle.onHover.background = tex;
         listStyle.onActive.background = tex;
-        listStyle.hover.textColor = color;
+        Color text = Color.Lerp(color, Color.white, 0.7f); // jasny odcien podswietlenia: czytelny tekst na ciemnym tle
+        listStyle.hover.textColor = text;
         listStyle.onHover.textColor = Color.white;
         listStyle.onNormal.textColor = Color.white;
         listStyle.onActive.textColor = Color.white;
-        Color text = color;
         tStyle.onNormal.textColor = text;
         tStyle.onHover.textColor = text;
         tStyle.onActive.textColor = text;
@@ -213,6 +225,101 @@ internal class UIParams {
         textStyle.active.textColor = text;
         bStyle.hover.textColor = text;
         bStyle.onHover.textColor = text;
+        BuildToolbarStyle(color);
+    }
+
+    // Styl przyciskow grup wyboru (GUILayout.Toolbar). Wlasne tekstury (nie zaleza od skorki gry): ciemny przycisk z jasniejsza
+    // ramka, najechany jasniejszy, zaznaczony wypelniony kolorem wyrozniajacym (ten sam co podswietlenie list).
+    readonly Texture2D[] tbTextures = new Texture2D[4];
+    void BuildToolbarStyle(Color accent) {
+        for (int i = 0; i < tbTextures.Length; i++) {
+            if (tbTextures[i]) UnityEngine.Object.Destroy(tbTextures[i]);
+        }
+        Color edge = new Color(0.45f, 0.45f, 0.50f, 1f);
+        tbTextures[0] = ButtonTexture(new Color(0.17f, 0.17f, 0.19f, 0.96f), edge);
+        tbTextures[1] = ButtonTexture(new Color(0.28f, 0.28f, 0.32f, 0.96f), new Color(0.78f, 0.78f, 0.84f, 1f));
+        tbTextures[2] = ButtonTexture(new Color(0.10f, 0.10f, 0.12f, 0.96f), edge);
+        Color accentOpaque = new Color(accent.r, accent.g, accent.b, 1f);
+        tbTextures[3] = ButtonTexture(accentOpaque, Color.Lerp(accentOpaque, Color.white, 0.5f));
+
+        ApplyButtonLook(tbStyle);
+        ApplyButtonLook(tbStyleL);
+        tbStyleL.alignment = TextAnchor.MiddleLeft;
+        BuildAreaStyles();
+    }
+
+    void ApplyButtonLook(GUIStyle tbStyle) {
+        tbStyle.normal.background = tbTextures[0];
+        tbStyle.hover.background = tbTextures[1];
+        tbStyle.active.background = tbTextures[2];
+        tbStyle.focused.background = tbTextures[0];
+        tbStyle.onNormal.background = tbTextures[3];
+        tbStyle.onHover.background = tbTextures[3];
+        tbStyle.onActive.background = tbTextures[3];
+        tbStyle.onFocused.background = tbTextures[3];
+
+        Color txt = new Color(0.92f, 0.92f, 0.95f, 1f);
+        tbStyle.normal.textColor = txt;
+        tbStyle.hover.textColor = Color.white;
+        tbStyle.active.textColor = Color.white;
+        tbStyle.focused.textColor = txt;
+        tbStyle.onNormal.textColor = Color.white;
+        tbStyle.onHover.textColor = Color.white;
+        tbStyle.onActive.textColor = Color.white;
+        tbStyle.onFocused.textColor = Color.white;
+
+        tbStyle.border = new RectOffset(1, 1, 1, 1);
+        tbStyle.padding = new RectOffset(8, 8, 3, 3);
+        tbStyle.margin = new RectOffset(0, 0, 2, 2);
+        tbStyle.alignment = TextAnchor.MiddleCenter;
+        tbStyle.fontStyle = FontStyle.Normal;
+        tbStyle.clipping = TextClipping.Clip;
+        tbStyle.fontSize = ButtonFontPx();
+    }
+
+    // Rozmiar czcionki przyciskow = czcionka interfejsu * mnoznik z ustawien (A- / A+ w oknie Library).
+    public int ButtonFontPx() {
+        int basePx = fontSize > 0 ? fontSize : 14;
+        return Mathf.Max(8, Mathf.RoundToInt(basePx * CM3D2.PartsEdit.Plugin.Setting.buttonFontScale));
+    }
+
+    public void AdjustButtonFont(float delta) {
+        float scale = Mathf.Round((CM3D2.PartsEdit.Plugin.Setting.buttonFontScale + delta) * 20f) / 20f;
+        CM3D2.PartsEdit.Plugin.Setting.buttonFontScale = Mathf.Clamp(scale, 0.6f, 1.3f);
+        bStyle.fontSize = ButtonFontPx();
+        bStyleL.fontSize = ButtonFontPx();
+        tbStyle.fontSize = ButtonFontPx();
+        tbStyleL.fontSize = ButtonFontPx();
+        CM3D2.PartsEdit.Plugin.Setting.SaveIni();
+    }
+
+    // Tla obszarow: dwa odcienie szarosci z cienka ramka, zeby sekcje i wiersze list byly wyraznie rozdzielone.
+    readonly Texture2D[] areaTextures = new Texture2D[2];
+    void BuildAreaStyles() {
+        for (int i = 0; i < areaTextures.Length; i++) {
+            if (areaTextures[i]) UnityEngine.Object.Destroy(areaTextures[i]);
+        }
+        areaTextures[0] = ButtonTexture(new Color(0.27f, 0.27f, 0.30f, 0.62f), new Color(0.42f, 0.42f, 0.46f, 0.80f));
+        areaTextures[1] = ButtonTexture(new Color(0.10f, 0.10f, 0.12f, 0.70f), new Color(0.28f, 0.28f, 0.31f, 0.80f));
+        GUIStyle[] styles = new GUIStyle[] { areaStyleA, areaStyleB };
+        for (int i = 0; i < styles.Length; i++) {
+            styles[i].normal.background = areaTextures[i];
+            styles[i].border = new RectOffset(1, 1, 1, 1);
+            styles[i].padding = new RectOffset(8, 8, 5, 5);
+            styles[i].margin = new RectOffset(0, 0, 4, 4);
+        }
+    }
+
+    static Texture2D ButtonTexture(Color fill, Color edge) {
+        Texture2D tex = new Texture2D(3, 3, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Point;
+        for (int y = 0; y < 3; y++) {
+            for (int x = 0; x < 3; x++) {
+                tex.SetPixel(x, y, (x == 0 || x == 2 || y == 0 || y == 2) ? edge : fill);
+            }
+        }
+        tex.Apply();
+        return tex;
     }
 
     static void CopySkin(GUIStyle dst, GUIStyle src) {
@@ -264,9 +371,11 @@ internal class UIParams {
         lStyleS.fontSize = fontSizeS;
         lStyleRS.fontSize = fontSizeS;
 
-        bStyle.fontSize = fontSize;
+        bStyle.fontSize = ButtonFontPx();
         bStyleSC.fontSize = fontSizeS;
-        bStyleL.fontSize = fontSize;
+        bStyleL.fontSize = ButtonFontPx();
+        tbStyle.fontSize = ButtonFontPx();
+        tbStyleL.fontSize = ButtonFontPx();
         tStyle.fontSize = fontSize;
         tStyleS.fontSize = fontSizeS;
         tStyleSS.fontSize = fontSizeSS;

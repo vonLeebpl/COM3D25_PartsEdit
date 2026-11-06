@@ -5,14 +5,14 @@ using UnityEngine;
 
 namespace CM3D2.PartsEdit.Plugin {
     // Entry point for BepInEx\plugins. UnityInjector can still load PartsEditPlugin.
-    [BepInPlugin("com3d25.partsedit", "COM3D25_PartsEdit", "0.2")]
+    [BepInPlugin("com3d25.partsedit", "COM3D25_PartsEdit", "0.3")]
     public class PartsEditBepInPlugin : BaseUnityPlugin {
         void Awake() {
             Log.Source = Logger;
             if (PartsEditPlugin.started) return;
             PartsEditPlugin.started = true;
 
-            PluginInfo.SetInfo("COM3D25_PartsEdit", "0.2", "CM3D2.PartsEdit.Plugin");
+            PluginInfo.SetInfo("COM3D25_PartsEdit", "0.3", "CM3D2.PartsEdit.Plugin");
             string configDir = Path.Combine(Paths.ConfigPath, "PartsEdit");
             Directory.CreateDirectory(configDir);
             Directory.CreateDirectory(Path.Combine(configDir, "Presets"));
@@ -21,6 +21,7 @@ namespace CM3D2.PartsEdit.Plugin {
             IniUtil.InitFile(Path.Combine(configDir, "COM3D2.PartsEdit.Plugin.ini"));
             Setting.LoadIni();
             Setting.SaveIni();
+            Db.PartsEditStore.Init(configDir, PresetManager.directoryPath);
 
             GameObject obj = new GameObject("PartsEdit.Plugin");
             DontDestroyOnLoad(obj);

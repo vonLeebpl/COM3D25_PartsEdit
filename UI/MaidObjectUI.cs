@@ -75,7 +75,7 @@ namespace CM3D2.PartsEdit.Plugin {
         }
 
         void DrawShoeBones() {
-            // Po wlaczeniu kosci w siatce to *_ShoeAdj, wiec CanApply jest false - wiersz musi zostac, zeby mozna go wylaczyc.
+            // Po wlaczeniu kosci w siatce to *_Adj, wiec CanApply jest false - wiersz musi zostac, zeby mozna go wylaczyc.
             if (!ShoeProxy.IsActive(CommonUIData.obj) && !ShoeProxy.CanApply(CommonUIData.obj)) return;
             GUILayout.BeginHorizontal();
             {
@@ -84,31 +84,39 @@ namespace CM3D2.PartsEdit.Plugin {
                 bool active = ShoeProxy.IsActive(CommonUIData.obj);
                 bool next = GUILayout.Toggle(active, "", UIParams.Instance.tStyle);
                 if (next != active) {
-                    if (next) ShoeProxy.Enable(CommonUIData.obj); else ShoeProxy.Disable(CommonUIData.obj);
+                    if (next) {
+                        List<Transform> restored = new List<Transform>();
+                        ShoeProxy.Enable(CommonUIData.obj, restored, true);
+                        RegisterRestoredBackups(restored);
+                    } else {
+                        ShoeProxy.Disable(CommonUIData.obj);
+                    }
                     BoneEdit.requestRebuild = true;
                 }
             }
             GUILayout.EndHorizontal();
         }
 
+        // Przywrocone korekty maja miec kopie zapasowa (przyciski R / Revert), a ich "oryginalem" jest poza identycznosciowa nowego zastepnika.
+        void RegisterRestoredBackups(List<Transform> restored) {
+            foreach (Transform t in restored) {
+                BackUpBoneData data = BackUpData.GetOrAddMaidBoneData(CommonUIData.maid, CommonUIData.slotNo, CommonUIData.obj, t);
+                if (!data.changedPos && t.localPosition != Vector3.zero) { data.position = Vector3.zero; data.changedPos = true; }
+                if (!data.changedRot && t.localRotation != Quaternion.identity) { data.rotation = Quaternion.identity; data.changedRot = true; }
+                if (!data.changedScl && t.localScale != Vector3.one) { data.scale = Vector3.one; data.changedScl = true; }
+            }
+            BackUpData.Refresh();
+        }
+
         void DrawImportExport() {
             GUILayout.BeginHorizontal();
             {
                 GUILayout.Label(Text.Preset, UIParams.Instance.lStyle);
-                if (!CommonUIData.obj) {
-                    GUI.enabled = false;
+                // Import / Export / Set zastapilo okno Library (stare xml sa zaimportowane do bazy)
+                if (GUILayout.Button(Text.Library, UIParams.Instance.bStyle)) {
+                    Setting.mode = Mode.Library;
                 }
-                if(GUILayout.Button("Import", UIParams.Instance.bStyle)) {
-                    Setting.mode = Mode.Import;
-                }
-                if(GUILayout.Button("Export", UIParams.Instance.bStyle)) {
-                    Setting.mode = Mode.Export;
-                }
-                GUI.enabled = true;
                 GUI.enabled = CommonUIData.maid;
-                if (GUILayout.Button(Text.Set, UIParams.Instance.bStyle)) {
-                    Setting.mode = Mode.Set;
-                }
                 if (GUILayout.Button(Text.Copy, UIParams.Instance.bStyle)) {
                     Setting.mode = Mode.Copy;
                 }

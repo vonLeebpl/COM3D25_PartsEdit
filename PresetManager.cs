@@ -204,7 +204,10 @@ namespace CM3D2.PartsEdit.Plugin {
             }
             CommonUIData.obj.transform.localScale = objectData.rootData.scale;
 
+            foreach (ObjectData.TransformData t in objectData.transformDataList) t.name = Db.ProxyNames.Normalize(t.name); // stare nazwy _ShoeAdj
+            bool hasProxyData = objectData.transformDataList.Any(t => Db.ProxyNames.IsEdit(t.name));
             foreach (ObjectData.TransformData trsData in objectData.transformDataList) {
+                if (ShoeProxy.SkipOnApply(trsData.name, hasProxyData)) continue;
                 Transform bone;
                 if (Setting.targetSelectMode == 0 && CommonUIData.slotNo == -1) {
                     bone = CMT.SearchObjName(CommonUIData.obj.transform, trsData.name, true);

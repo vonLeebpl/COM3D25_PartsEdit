@@ -66,6 +66,11 @@ namespace CM3D2.PartsEdit.Plugin {
             activeMaidList = maidObserver.GetActiveMaidList();
             string selectMaidName;
 
+            // Selektor utworzony po wyborze pokojowki na innym ekranie (np. okno Library) startuje bez wyboru,
+            // a ShowScroll zwraca biezacy indeks - bez tej synchronizacji kasowalby wspolny wybor (CommonUIData.maid).
+            if (!selectedMaid && CommonUIData.maid && activeMaidList.Contains(CommonUIData.maid)) selectedMaid = CommonUIData.maid;
+
+
             if (selectedMaid && activeMaidList.Contains(selectedMaid)){
                 selectMaidName = GetMaidFullName(selectedMaid);
             } else {
@@ -79,6 +84,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 maidNameList[i + 1] = new GUIContent(GetMaidFullName(activeMaidList[i]));
             }
             combo = new ComboBoxLO(new GUIContent(selectMaidName), maidNameList, UIParams.Instance.bStyle, UIParams.Instance.winStyle, UIParams.Instance.listStyle, false);
+            if (selectedMaid) combo.SelectedItemIndex = activeMaidList.IndexOf(selectedMaid) + 1;
         }
 
         string GetMaidFullName(Maid maid) {
