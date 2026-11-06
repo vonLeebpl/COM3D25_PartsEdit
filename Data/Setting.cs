@@ -39,7 +39,7 @@ namespace CM3D2.PartsEdit.Plugin {
         public static float windowWidth = 720f;
         public static float windowHeight = 850f;
         // mnoznik rozmiaru czcionki przyciskow wzgledem czcionki interfejsu (ustawiany przyciskami A- / A+ w oknie Library)
-        public static float buttonFontScale = 0.85f;
+        public static float buttonFontScale = 0.80f;
 
         public static SettingValue<BodyBoneDisplay> bodyBoneDisplay = new SettingValue<BodyBoneDisplay>(BodyBoneDisplay.Visible);
 

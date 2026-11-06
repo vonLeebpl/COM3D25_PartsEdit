@@ -43,6 +43,11 @@ internal class UIParams {
     public readonly GUIStyle bStyleL = new GUIStyle();
     // przyciski grup wyboru (zamiast radio-buttonow): wcisniety = kolor wyrozniajacy, reszta wylaczona
     public readonly GUIStyle tbStyle = new GUIStyle();
+    // ten sam wyglad, tekst do lewej: przyciski rozwijajace listy i dodajace (wcisniety = lista otwarta)
+    public readonly GUIStyle tbStyleL = new GUIStyle();
+    // tla obszarow (sekcje strony Maid, wiersze list - naprzemiennie): jasniejszy i ciemniejszy odcien szarosci
+    public readonly GUIStyle areaStyleA = new GUIStyle();
+    public readonly GUIStyle areaStyleB = new GUIStyle();
 
     public readonly GUIStyle tStyle = new GUIStyle();
     public readonly GUIStyle tStyleS = new GUIStyle();
@@ -237,6 +242,13 @@ internal class UIParams {
         Color accentOpaque = new Color(accent.r, accent.g, accent.b, 1f);
         tbTextures[3] = ButtonTexture(accentOpaque, Color.Lerp(accentOpaque, Color.white, 0.5f));
 
+        ApplyButtonLook(tbStyle);
+        ApplyButtonLook(tbStyleL);
+        tbStyleL.alignment = TextAnchor.MiddleLeft;
+        BuildAreaStyles();
+    }
+
+    void ApplyButtonLook(GUIStyle tbStyle) {
         tbStyle.normal.background = tbTextures[0];
         tbStyle.hover.background = tbTextures[1];
         tbStyle.active.background = tbTextures[2];
@@ -277,7 +289,25 @@ internal class UIParams {
         bStyle.fontSize = ButtonFontPx();
         bStyleL.fontSize = ButtonFontPx();
         tbStyle.fontSize = ButtonFontPx();
+        tbStyleL.fontSize = ButtonFontPx();
         CM3D2.PartsEdit.Plugin.Setting.SaveIni();
+    }
+
+    // Tla obszarow: dwa odcienie szarosci z cienka ramka, zeby sekcje i wiersze list byly wyraznie rozdzielone.
+    readonly Texture2D[] areaTextures = new Texture2D[2];
+    void BuildAreaStyles() {
+        for (int i = 0; i < areaTextures.Length; i++) {
+            if (areaTextures[i]) UnityEngine.Object.Destroy(areaTextures[i]);
+        }
+        areaTextures[0] = ButtonTexture(new Color(0.27f, 0.27f, 0.30f, 0.62f), new Color(0.42f, 0.42f, 0.46f, 0.80f));
+        areaTextures[1] = ButtonTexture(new Color(0.10f, 0.10f, 0.12f, 0.70f), new Color(0.28f, 0.28f, 0.31f, 0.80f));
+        GUIStyle[] styles = new GUIStyle[] { areaStyleA, areaStyleB };
+        for (int i = 0; i < styles.Length; i++) {
+            styles[i].normal.background = areaTextures[i];
+            styles[i].border = new RectOffset(1, 1, 1, 1);
+            styles[i].padding = new RectOffset(8, 8, 5, 5);
+            styles[i].margin = new RectOffset(0, 0, 4, 4);
+        }
     }
 
     static Texture2D ButtonTexture(Color fill, Color edge) {
@@ -345,6 +375,7 @@ internal class UIParams {
         bStyleSC.fontSize = fontSizeS;
         bStyleL.fontSize = ButtonFontPx();
         tbStyle.fontSize = ButtonFontPx();
+        tbStyleL.fontSize = ButtonFontPx();
         tStyle.fontSize = fontSize;
         tStyleS.fontSize = fontSizeS;
         tStyleSS.fontSize = fontSizeSS;

@@ -214,6 +214,8 @@ namespace CM3D2.PartsEdit.Plugin {
             }
             MaidBinding b = Binding(maid, false);
 
+            // sekcje na przemiennych tlach (jasniejszy / ciemniejszy szary), zeby bylo widac, co do czego nalezy
+            GUILayout.BeginVertical(UIParams.Instance.areaStyleA);
             bool auto = b != null && b.AutoLoad;
             bool autoNew = GUILayout.Toggle(auto, TL.AutoLoad, UIParams.Instance.tStyle);
             if (autoNew != auto) {
@@ -230,17 +232,23 @@ namespace CM3D2.PartsEdit.Plugin {
                 status = TL.ResetDone;
             }
             GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
 
-            GUILayout.Space(6);
+            GUILayout.BeginVertical(UIParams.Instance.areaStyleB);
             DrawMaidSets(maid, b);
-            GUILayout.Space(6);
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical(UIParams.Instance.areaStyleA);
             DrawMaidEntries(maid, b);
-            GUILayout.Space(6);
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical(UIParams.Instance.areaStyleB);
             DrawCapture(maid);
+            GUILayout.EndVertical();
         }
 
         void DrawMaidSets(Maid maid, MaidBinding b) {
-            GUILayout.Label(TL.SetsOfMaid, UIParams.Instance.lStyle);
+            GUILayout.Label(TL.SetsOfMaid, UIParams.Instance.lStyleB);
             UIUtil.BeginIndentArea();
             if (b == null || b.SetIds.Count == 0) GUILayout.Label(TL.None, UIParams.Instance.lStyle);
             if (b != null) {
@@ -263,8 +271,9 @@ namespace CM3D2.PartsEdit.Plugin {
                     if (Db.Sets.TryGetValue(remove, out removed)) { LibraryService.Revert(maid, EntriesOf(removed)); status = string.Format(TL.SetRemovedFmt, removed.Name); }
                 }
             }
-            addSetOpen = GUILayout.Toggle(addSetOpen, TL.AddSet, UIParams.Instance.tStyle);
+            addSetOpen = Expander(addSetOpen, TL.AddSet);
             if (addSetOpen) {
+                BeginList();
                 addSetShowOthers = GUILayout.Toggle(addSetShowOthers, TL.ShowOtherSets, UIParams.Instance.tStyle);
                 List<ModSet> choices = Db.Sets.Values.Where(s => (b == null || !b.SetIds.Contains(s.Id)) && (addSetShowOthers || MineSet(maid, s))).OrderBy(s => s.Name).ToList();
                 if (choices.Count == 0) GUILayout.Label(TL.NoOtherSets, UIParams.Instance.lStyle);
@@ -276,12 +285,13 @@ namespace CM3D2.PartsEdit.Plugin {
                         status = string.Format(TL.SetAddedFmt, s.Name);
                     }
                 }
+                EndList();
             }
             UIUtil.EndoIndentArea();
         }
 
         void DrawMaidEntries(Maid maid, MaidBinding b) {
-            GUILayout.Label(TL.ModsOfMaid, UIParams.Instance.lStyle);
+            GUILayout.Label(TL.ModsOfMaid, UIParams.Instance.lStyleB);
             UIUtil.BeginIndentArea();
             if (b == null || b.EntryIds.Count == 0) GUILayout.Label(TL.None, UIParams.Instance.lStyle);
             if (b != null) {
@@ -306,8 +316,9 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
             }
 
-            addEntryOpen = GUILayout.Toggle(addEntryOpen, TL.AddMod, UIParams.Instance.tStyle);
+            addEntryOpen = Expander(addEntryOpen, TL.AddMod);
             if (addEntryOpen) {
+                BeginList();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(TL.Search, UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
                 string s2 = GUILayout.TextField(addEntrySearch, UIParams.Instance.textStyle);
@@ -331,9 +342,19 @@ namespace CM3D2.PartsEdit.Plugin {
                     }
                 }
                 addPage = DrawPager(addPage, choices.Count);
+                EndList();
             }
             UIUtil.EndoIndentArea();
         }
+
+        // Przycisk rozwijajacy liste (zamiast radio-buttona): wcisniety = lista otwarta. Tekst do lewej, wyglad jak grupy przyciskow.
+        bool Expander(bool open, string label) {
+            return GUILayout.Toggle(open, label, UIParams.Instance.tbStyleL);
+        }
+
+        // Rozwinieta lista jest wcieta z lewej, zeby bylo widac, do czego nalezy.
+        void BeginList() { UIUtil.BeginIndentArea(20); }
+        void EndList() { UIUtil.EndoIndentArea(); }
 
         void Resync(Maid maid) {
             if (maid) LibraryService.RequestSync(maid);
@@ -365,7 +386,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 EntryCondition remove = null;
                 for (int i = 0; i < e.Conditions.Count; i++) {
                     EntryCondition c = e.Conditions[i];
-                    GUILayout.BeginVertical(UIParams.Instance.boxStyle);
+                    GUILayout.BeginVertical(UIParams.Instance.areaStyleB);
 
                     GUILayout.BeginHorizontal();
                     if (GUILayout.Button(KindLabel(c.Kind), UIParams.Instance.bStyle)) {
@@ -399,13 +420,15 @@ namespace CM3D2.PartsEdit.Plugin {
 
                 GUILayout.Label(TL.CondWildcardHint, UIParams.Instance.lStyleS);
 
-                if (GUILayout.Button(TL.CondAdd, UIParams.Instance.bStyle)) {
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button(TL.CondAdd, UIParams.Instance.tbStyleL)) {
                     e.Conditions.Add(new EntryCondition());
                     Save(); Resync(maid);
                 }
-
-                conditionsFromWornOpen = GUILayout.Toggle(conditionsFromWornOpen, TL.CondFromWorn, UIParams.Instance.tStyle);
+                conditionsFromWornOpen = Expander(conditionsFromWornOpen, TL.CondFromWorn);
+                GUILayout.EndHorizontal();
                 if (conditionsFromWornOpen) {
+                    BeginList();
                     if (!maid) {
                         GUILayout.Label(TL.CondNeedMaid, UIParams.Instance.lStyleS);
                     } else {
@@ -427,6 +450,7 @@ namespace CM3D2.PartsEdit.Plugin {
                             }
                         }
                     }
+                    EndList();
                 }
 
                 if (maid) {
@@ -451,7 +475,7 @@ namespace CM3D2.PartsEdit.Plugin {
 
         // Zapis biezacego stanu slotu jako nowej modyfikacji (odpowiednik starego Export).
         void DrawCapture(Maid maid) {
-            GUILayout.Label(TL.SaveSlotHeader, UIParams.Instance.lStyle);
+            GUILayout.Label(TL.SaveSlotHeader, UIParams.Instance.lStyleB);
             UIUtil.BeginIndentArea();
 
             List<int> slotIds = SetManager.GetEquippedSlotIds(maid);
@@ -459,8 +483,9 @@ namespace CM3D2.PartsEdit.Plugin {
             if (captureSlotIndex >= slotIds.Count) captureSlotIndex = -1;
 
             string current = captureSlotIndex >= 0 ? SetManager.SlotLabel(maid, slotIds[captureSlotIndex]) : TL.ChooseSlot;
-            slotPickerOpen = GUILayout.Toggle(slotPickerOpen, string.Format(TL.SlotFmt, current), UIParams.Instance.tStyle);
+            slotPickerOpen = Expander(slotPickerOpen, string.Format(TL.SlotFmt, current));
             if (slotPickerOpen) {
+                BeginList();
                 for (int i = 0; i < slotIds.Count; i++) {
                     if (GUILayout.Button(SetManager.SlotLabel(maid, slotIds[i]), UIParams.Instance.bStyleL)) {
                         captureSlotIndex = i;
@@ -468,6 +493,7 @@ namespace CM3D2.PartsEdit.Plugin {
                         if (string.IsNullOrEmpty(captureName)) captureName = SlotUtil.GetSlotName(slotIds[i]);
                     }
                 }
+                EndList();
             }
 
             GUILayout.BeginHorizontal();
@@ -546,8 +572,9 @@ namespace CM3D2.PartsEdit.Plugin {
             if (entries.Count == 0) GUILayout.Label(maid && !showAllEntries ? TL.NoMineHint : TL.LibraryEmpty, UIParams.Instance.lStyle);
 
             Guid delete = Guid.Empty;
+            int rowIndex = 0;
             foreach (ModEntry e in Slice(entries, page)) {
-                GUILayout.BeginVertical(UIParams.Instance.boxStyle);
+                GUILayout.BeginVertical(rowIndex++ % 2 == 0 ? UIParams.Instance.areaStyleA : UIParams.Instance.areaStyleB);
                 GUILayout.BeginHorizontal();
                 if (renameId == e.Id) {
                     renameText = GUILayout.TextField(renameText, UIParams.Instance.textStyle);
@@ -660,9 +687,10 @@ namespace CM3D2.PartsEdit.Plugin {
             if (sets.Count == 0) GUILayout.Label(TL.NoSetsYet, UIParams.Instance.lStyle);
 
             Guid deleteSet = Guid.Empty;
+            int setRow = 0;
             foreach (ModSet set in Slice(sets, setsPage)) {
                 bool open = openSetId == set.Id;
-                GUILayout.BeginVertical(UIParams.Instance.boxStyle);
+                GUILayout.BeginVertical(setRow++ % 2 == 0 ? UIParams.Instance.areaStyleA : UIParams.Instance.areaStyleB);
                 GUILayout.BeginHorizontal();
                 if (setRenameId == set.Id) {
                     setRenameText = GUILayout.TextField(setRenameText, UIParams.Instance.textStyle);
@@ -725,8 +753,9 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
             }
 
-            setAddOpen = GUILayout.Toggle(setAddOpen, TL.AddModToSet, UIParams.Instance.tStyle);
+            setAddOpen = Expander(setAddOpen, TL.AddModToSet);
             if (setAddOpen) {
+                BeginList();
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(TL.Search, UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
                 string s2 = GUILayout.TextField(setAddSearch, UIParams.Instance.textStyle);
@@ -742,6 +771,7 @@ namespace CM3D2.PartsEdit.Plugin {
                     }
                 }
                 setAddPage = DrawPager(setAddPage, choices.Count);
+                EndList();
             }
 
             GUILayout.BeginHorizontal();
