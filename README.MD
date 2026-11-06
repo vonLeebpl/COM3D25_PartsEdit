@@ -74,6 +74,16 @@ Settings and data are stored in `BepInEx\config\PartsEdit\`.
 4. Switch **Auto-load** on. From now on the modification is applied when the maid loads and whenever she changes clothes
    to something that fits (see [Conditions](#conditions-when-does-a-modification-apply)).
 
+High-heel shoes before and after the correction (the same maid and pose):
+
+| Before | After |
+| --- | --- |
+| ![Shoes before the correction](docs/images/shoes-before.png) | ![Shoes after the correction](docs/images/shoes-after.png) |
+
+The correction is made on the foot bones, so it follows the foot when the pose changes:
+
+![The same modification after the pose was changed](docs/images/shoes-follow-pose.png)
+
 ### The main screen
 
 - **Config** - *Bone Display* (Hide / Display; `Detailed` has colours and the select key), *Coord. Type* (Local / Global / View)
