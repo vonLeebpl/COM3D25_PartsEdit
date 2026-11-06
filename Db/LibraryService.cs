@@ -113,6 +113,60 @@ namespace CM3D2.PartsEdit.Plugin.Db {
             }
         }
 
+        // Zamienia poze korzenia obiektu (Maid Parts) na rownowazne korekty kosci-zastepnikow (Independent bones).
+        // Korzen obraca caly szkielet slotu jak sztywna bryle wokol jednego punktu, wiec taki obrot pasuje tylko do jednej pozy.
+        // Po zamianie wyglad w biezacej pozie jest taki sam, ale korekta jest wzgledem kosci i podaza za nimi w kazdej pozie.
+        public static string BakeRootIntoBones(Maid maid, int slotNo) {
+            GameObject obj = SetManager.GetSlotObject(maid, slotNo);
+            if (!obj) return "Nothing is equipped in this slot.";
+            ShoeProxyMarker marker = obj.GetComponent<ShoeProxyMarker>();
+            if (marker == null || marker.suspended) return "Enable 'Independent bones' for this slot first.";
+
+            Transform root = obj.transform;
+            BackUpBoneData rb = BackUpData.GetOrNullMaidBoneData(maid, slotNo, obj, root);
+            if (rb == null || !(rb.changedPos || rb.changedRot || rb.changedScl)) return "The object root pose of this slot is not changed - nothing to convert.";
+
+            // wplyw zmiany korzenia jako przeksztalcenie w przestrzeni swiata
+            Matrix4x4 parent = root.parent ? root.parent.localToWorldMatrix : Matrix4x4.identity;
+            Matrix4x4 current = Matrix4x4.TRS(root.localPosition, root.localRotation, root.localScale);
+            Matrix4x4 original = Matrix4x4.TRS(
+                rb.changedPos ? rb.position : root.localPosition,
+                rb.changedRot ? rb.rotation : root.localRotation,
+                rb.changedScl ? rb.scale : root.localScale);
+            Matrix4x4 delta = parent * current * original.inverse * parent.inverse;
+
+            // cofnij korzen, a to samo przeksztalcenie zapisz w kosciach (kosci wezlow "follow" maja stale pozy wzgledne, wiec
+            // ich swiat od razu odpowiada nowemu polozeniu korzenia)
+            BackUpData.RestoreBone(maid, slotNo, obj, root);
+            BackUpData.Refresh();
+
+            // Zastepniki tworza hierarchie (przesuniecie gornego przenosi tez nizsze), wiec korekte zapisujemy tylko w wezlach
+            // BEZ zastepnikow nizej (stopy itp.), kazdy wzgledem wlasnej kosci - inaczej korekta zostalaby podwojona albo zalezalaby
+            // od bioder zamiast od stop.
+            List<Transform> edits = new List<Transform>();
+            foreach (KeyValuePair<Transform, Transform> pair in marker.nodes) if (pair.Key) edits.Add(pair.Key);
+
+            int count = 0;
+            foreach (Transform edit in edits) {
+                if (!edit.parent) continue;
+                Transform self = edit;
+                if (edits.Any(other => other != self && other.IsChildOf(self))) continue;
+                BackUpBoneData backup = BackUpData.GetOrAddMaidBoneData(maid, slotNo, obj, edit);
+                if (!backup.changedPos) { backup.position = edit.localPosition; backup.changedPos = true; }
+                if (!backup.changedRot) { backup.rotation = edit.localRotation; backup.changedRot = true; }
+                if (!backup.changedScl) { backup.scale = edit.localScale; backup.changedScl = true; }
+
+                Matrix4x4 parentWorld = edit.parent.localToWorldMatrix;
+                Matrix4x4 local = Matrix4x4.TRS(edit.localPosition, edit.localRotation, edit.localScale);
+                ShoeProxy.SetLocalFromMatrix(edit, parentWorld.inverse * delta * parentWorld * local);
+                count++;
+            }
+            BackUpData.Refresh();
+            BoneEdit.requestRebuild = true;
+            Log.Info("root pose of '" + obj.name + "' baked into " + count + " bone adjustments");
+            return "Object root pose converted into " + count + " bone adjustments (relative to the bones). Save the slot as a modification to keep it.";
+        }
+
         // Cofa tylko poze korzenia obiektu (np. po wylaczeniu "Object root pose" we wpisie).
         public static void RevertRoot(Maid maid, ModEntry entry) {
             if (!maid) return;

@@ -333,6 +333,12 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
             }
             GUI.enabled = true;
+
+            GUI.enabled = captureSlotIndex >= 0;
+            if (GUILayout.Button("Convert object root pose into bone adjustments", UIParams.Instance.bStyle)) {
+                status = LibraryService.BakeRootIntoBones(maid, slotIds[captureSlotIndex]);
+            }
+            GUI.enabled = true;
             UIUtil.EndoIndentArea();
         }
 

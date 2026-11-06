@@ -179,6 +179,17 @@ namespace CM3D2.PartsEdit.Plugin {
             return dataHasProxyBones && !boneName.EndsWith(Suffix);
         }
 
+        // Ustawia lokalna poze transformacji z macierzy (pozycja, obrot, skala). Przy macierzach prawie "czystych" (male korekty)
+        // blad rozkladu jest pomijalny.
+        public static void SetLocalFromMatrix(Transform t, Matrix4x4 m) {
+            Vector3 right = m.GetColumn(0);
+            Vector3 up = m.GetColumn(1);
+            Vector3 forward = m.GetColumn(2);
+            t.localPosition = m.GetColumn(3);
+            if (up.sqrMagnitude > 1e-10f && forward.sqrMagnitude > 1e-10f) t.localRotation = Quaternion.LookRotation(forward, up);
+            t.localScale = new Vector3(right.magnitude, up.magnitude, forward.magnitude);
+        }
+
         public static bool IsActive(GameObject obj) {
             return obj && obj.GetComponent<ShoeProxyMarker>() != null;
         }
