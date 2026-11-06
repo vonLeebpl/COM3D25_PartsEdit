@@ -38,6 +38,8 @@ namespace CM3D2.PartsEdit.Plugin {
         public static float gravityX, gravityY = -1f, gravityZ;
         public static float windowWidth = 720f;
         public static float windowHeight = 850f;
+        // mnoznik rozmiaru czcionki przyciskow wzgledem czcionki interfejsu (ustawiany przyciskami A- / A+ w oknie Library)
+        public static float buttonFontScale = 0.85f;
 
         public static SettingValue<BodyBoneDisplay> bodyBoneDisplay = new SettingValue<BodyBoneDisplay>(BodyBoneDisplay.Visible);
 
@@ -84,6 +86,12 @@ namespace CM3D2.PartsEdit.Plugin {
             ikChainColor = new SettingValue<Color>(ColorUtil.ParseColor(IniUtil.GetStringValue("BoneDisplay", "IKChainColor", "#0000bf")));
             windowWidth = IniUtil.GetFloatValue("Window", "Width", 720f);
             windowHeight = IniUtil.GetFloatValue("Window", "Height", 850f);
+            // zapisywane w kulturze niezmiennej (kropka), zeby ini nie zalezalo od ustawien regionalnych
+            float scale;
+            if (float.TryParse(IniUtil.GetStringValue("Window", "ButtonFontScale", ""), System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out scale) && scale >= 0.5f && scale <= 1.5f) {
+                buttonFontScale = scale;
+            }
             bodyBoneDisplay = new SettingValue<BodyBoneDisplay>((BodyBoneDisplay)IniUtil.GetIntValue("BoneDisplay", "BodyBoneDisplay", (int)BodyBoneDisplay.Visible));
         }
 
@@ -118,6 +126,7 @@ namespace CM3D2.PartsEdit.Plugin {
             IniUtil.preferences["BoneDisplay"]["IKChainColor"].Value = ColorUtil.ToHex(ikChainColor.GetValue());
             IniUtil.preferences["Window"]["Width"].Value = windowWidth.ToString();
             IniUtil.preferences["Window"]["Height"].Value = windowHeight.ToString();
+            IniUtil.preferences["Window"]["ButtonFontScale"].Value = buttonFontScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
             IniUtil.preferences["BoneDisplay"]["BodyBoneDisplay"].Value = ((int)bodyBoneDisplay.GetValue()).ToString();
         }
 

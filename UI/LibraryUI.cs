@@ -70,7 +70,13 @@ namespace CM3D2.PartsEdit.Plugin {
         }
 
         public void Draw() {
+            GUILayout.BeginHorizontal();
             GUILayout.Label(Text.Library, UIParams.Instance.lStyle);
+            GUILayout.FlexibleSpace();
+            // rozmiar czcionki przyciskow (zapisywany w ustawieniach)
+            if (GUILayout.Button("A-", UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) UIParams.Instance.AdjustButtonFont(-0.05f);
+            if (GUILayout.Button("A+", UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) UIParams.Instance.AdjustButtonFont(0.05f);
+            GUILayout.EndHorizontal();
             if (Db == null) {
                 GUILayout.Label(TL.LibraryUnavailable, UIParams.Instance.lStyle);
                 DrawBack();

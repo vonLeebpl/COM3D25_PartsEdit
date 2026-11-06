@@ -262,7 +262,22 @@ internal class UIParams {
         tbStyle.alignment = TextAnchor.MiddleCenter;
         tbStyle.fontStyle = FontStyle.Normal;
         tbStyle.clipping = TextClipping.Clip;
-        tbStyle.fontSize = fontSize > 0 ? fontSize : 14;
+        tbStyle.fontSize = ButtonFontPx();
+    }
+
+    // Rozmiar czcionki przyciskow = czcionka interfejsu * mnoznik z ustawien (A- / A+ w oknie Library).
+    public int ButtonFontPx() {
+        int basePx = fontSize > 0 ? fontSize : 14;
+        return Mathf.Max(8, Mathf.RoundToInt(basePx * CM3D2.PartsEdit.Plugin.Setting.buttonFontScale));
+    }
+
+    public void AdjustButtonFont(float delta) {
+        float scale = Mathf.Round((CM3D2.PartsEdit.Plugin.Setting.buttonFontScale + delta) * 20f) / 20f;
+        CM3D2.PartsEdit.Plugin.Setting.buttonFontScale = Mathf.Clamp(scale, 0.6f, 1.3f);
+        bStyle.fontSize = ButtonFontPx();
+        bStyleL.fontSize = ButtonFontPx();
+        tbStyle.fontSize = ButtonFontPx();
+        CM3D2.PartsEdit.Plugin.Setting.SaveIni();
     }
 
     static Texture2D ButtonTexture(Color fill, Color edge) {
@@ -326,10 +341,10 @@ internal class UIParams {
         lStyleS.fontSize = fontSizeS;
         lStyleRS.fontSize = fontSizeS;
 
-        bStyle.fontSize = fontSize;
+        bStyle.fontSize = ButtonFontPx();
         bStyleSC.fontSize = fontSizeS;
-        bStyleL.fontSize = fontSize;
-        tbStyle.fontSize = fontSize;
+        bStyleL.fontSize = ButtonFontPx();
+        tbStyle.fontSize = ButtonFontPx();
         tStyle.fontSize = fontSize;
         tStyleS.fontSize = fontSizeS;
         tStyleSS.fontSize = fontSizeSS;
