@@ -113,6 +113,17 @@ namespace CM3D2.PartsEdit.Plugin.Db {
             }
         }
 
+        // Cofa tylko poze korzenia obiektu (np. po wylaczeniu "Object root pose" we wpisie).
+        public static void RevertRoot(Maid maid, ModEntry entry) {
+            if (!maid) return;
+            int slotNo = SetManager.FindSlotId(maid, entry.Slot);
+            if (slotNo == (int)EXSlot.None) return;
+            GameObject obj = SetManager.GetSlotObject(maid, slotNo);
+            if (!obj) return;
+            BackUpData.RestoreBone(maid, slotNo, obj, obj.transform);
+            BackUpData.Refresh();
+        }
+
         // Zapisuje aktualny stan slotu jako nowy wpis biblioteki (jeszcze nie dodaje go do bazy).
         // Zapisujemy TYLKO kosci, ktore uzytkownik zmienil (wg kopii zapasowych PartsEdit), a nie caly lancuch kosci z ich
         // chwilowymi pozami: pozy kosci sterowanych przez gre sa przestarzale po zmianie pozy postaci.

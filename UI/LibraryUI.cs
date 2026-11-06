@@ -392,6 +392,25 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
                 GUILayout.EndHorizontal();
                 if (e.Match == MatchMode.SameObjectName) GUILayout.Label("item: " + Short(e.ObjectName, 40), UIParams.Instance.lStyle);
+
+                // Poza korzenia obiektu (Maid Parts). Korzen obraca/przesuwa caly szkielet slotu jak sztywna bryle, wiec zapisany
+                // niezerowy obrot potrafi "rozjechac" przedmiot po zmianie pozy postaci - dlatego mozna to wylaczyc dla wpisu.
+                float rootRot = Quaternion.Angle(Quaternion.identity, DbConvert.ToQuaternion(e.Root.Rotation));
+                float rootMove = DbConvert.ToVector3(e.Root.Position).magnitude;
+                if (rootRot > 0.5f || rootMove > 0.002f) {
+                    string rootLabel = "Object root pose (rot " + rootRot.ToString("F1") + " deg, move " + (rootMove * 100f).ToString("F1") + " cm)";
+                    bool rootOn = GUILayout.Toggle(e.MaidParts, rootLabel, UIParams.Instance.tStyle);
+                    if (rootOn != e.MaidParts) {
+                        e.MaidParts = rootOn;
+                        Save();
+                        if (!rootOn && maid) {
+                            LibraryService.RevertRoot(maid, e);
+                            status = "Object root pose of '" + e.Name + "' switched off and reverted.";
+                        } else {
+                            status = "Object root pose of '" + e.Name + "' " + (rootOn ? "switched on (use Apply)." : "switched off.");
+                        }
+                    }
+                }
                 GUILayout.EndVertical();
             }
             if (delete != Guid.Empty) {
