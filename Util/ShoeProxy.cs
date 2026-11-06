@@ -18,7 +18,58 @@ namespace CM3D2.PartsEdit.Plugin {
     internal class ShoeProxyMarker : MonoBehaviour {
         public SkinnedMeshRenderer[] renderers;
         public Transform[][] originalBones;
+        // tablice kosci przypisane do renderers (z zastepnikami) - do wykrycia, ze gra podmienila smr.bones
+        public Transform[][] proxyBones;
         public List<GameObject> proxies = new List<GameObject>();
+        // pary (wezel edytowalny, prawdziwa kosc) - do pomiaru odchylenia
+        public List<KeyValuePair<Transform, Transform>> nodes = new List<KeyValuePair<Transform, Transform>>();
+
+        float nextReport;
+        int healCount;
+        // ustawiane w Disable(): Destroy(marker) jest odroczone do konca klatki, a kontrola przed renderowaniem nie moze wtedy "naprawiac" kosci
+        public bool suspended;
+
+        void OnEnable() { Application.onBeforeRender += OnBeforeRenderCheck; }
+        void OnDisable() { Application.onBeforeRender -= OnBeforeRenderCheck; }
+
+        // Tuz przed renderowaniem (po wszystkich aktualizacjach gry): 1) samonaprawa smr.bones, 2) pomiar odchylenia zastepnikow.
+        void OnBeforeRenderCheck() {
+            if (suspended || renderers == null || proxyBones == null) return;
+
+            bool healed = false;
+            for (int r = 0; r < renderers.Length; r++) {
+                SkinnedMeshRenderer smr = renderers[r];
+                if (!smr || proxyBones[r] == null) continue;
+                Transform[] current = smr.bones;
+                bool differ = current.Length != proxyBones[r].Length;
+                for (int i = 0; !differ && i < current.Length; i++) {
+                    if (current[i] != proxyBones[r][i]) differ = true;
+                }
+                if (differ) { smr.bones = proxyBones[r]; healed = true; }
+            }
+            if (healed && healCount++ < 5) Log.Warn("independent bones: the game replaced smr.bones on '" + name + "' - proxies restored (" + healCount + ")");
+
+            float now = Time.realtimeSinceStartup;
+            if (now < nextReport) return;
+            System.Text.StringBuilder sb = null;
+            foreach (KeyValuePair<Transform, Transform> pair in nodes) {
+                Transform edit = pair.Key, real = pair.Value;
+                if (!edit || !real) continue;
+                // gdy przodkowie nie maja korekt: swiat zastepnika = swiat prawdziwej kosci * lokalna korekta
+                Matrix4x4 expected = real.localToWorldMatrix * Matrix4x4.TRS(edit.localPosition, edit.localRotation, edit.localScale);
+                Matrix4x4 actual = edit.localToWorldMatrix;
+                float pos = ((Vector3)actual.GetColumn(3) - (Vector3)expected.GetColumn(3)).magnitude;
+                float ang = Quaternion.Angle(edit.rotation, real.rotation * edit.localRotation);
+                if (pos > 0.01f || ang > 2f) {
+                    if (sb == null) sb = new System.Text.StringBuilder();
+                    sb.Append(" [").Append(edit.name).Append(": pos ").Append(pos.ToString("F3")).Append(" m, rot ").Append(ang.ToString("F1")).Append(" deg]");
+                }
+            }
+            if (sb != null) {
+                nextReport = now + 3f;
+                Log.Warn("independent bones drift on '" + name + "' (proxy vs real bone, assuming unedited ancestors):" + sb);
+            }
+        }
     }
 
     // Zapamietane pozy edytowalnych zastepnikow po wylaczeniu (zyje na obiekcie, ginie razem z nim).
@@ -42,6 +93,10 @@ namespace CM3D2.PartsEdit.Plugin {
         void LateUpdate() {
             Apply();
         }
+
+        // Tuz przed renderowaniem, zeby kolejnosc aktualizacji wzgledem gry (animacje, IK, CopyTrans) nie miala znaczenia.
+        void OnEnable() { Application.onBeforeRender += Apply; }
+        void OnDisable() { Application.onBeforeRender -= Apply; }
 
         public void Apply() {
             if (!source || !reference) return;
@@ -145,6 +200,7 @@ namespace CM3D2.PartsEdit.Plugin {
             ShoeProxyMarker marker = obj.AddComponent<ShoeProxyMarker>();
             marker.renderers = renderers;
             marker.originalBones = new Transform[renderers.Length][];
+            marker.proxyBones = new Transform[renderers.Length][];
 
             // zbior kosci, ktore faktycznie uzywa siatka (i ktore zastepujemy)
             HashSet<Transform> used = CollectUsed(renderers);
@@ -165,6 +221,7 @@ namespace CM3D2.PartsEdit.Plugin {
                     changed = true;
                 }
                 if (changed) renderers[r].bones = bones;
+                marker.proxyBones[r] = changed ? bones : null;
             }
             if (restoreStash) {
                 ShoeProxyStash stash = obj.GetComponent<ShoeProxyStash>();
@@ -191,6 +248,7 @@ namespace CM3D2.PartsEdit.Plugin {
             if (!obj) return;
             ShoeProxyMarker marker = obj.GetComponent<ShoeProxyMarker>();
             if (marker == null) return;
+            marker.suspended = true;
 
             // zapamietaj korekty (tylko wezly edytowalne, nie "follow"), zeby dalo sie je przywrocic po ponownym wlaczeniu
             ShoeProxyStash stash = obj.GetComponent<ShoeProxyStash>();
@@ -227,6 +285,7 @@ namespace CM3D2.PartsEdit.Plugin {
             go.layer = real.gameObject.layer;
             proxy = go.transform;
             marker.proxies.Add(go);
+            marker.nodes.Add(new KeyValuePair<Transform, Transform>(proxy, real));
             Transform proxyParent;
 
             // najblizszy przodek, ktory tez jest zastepowany
