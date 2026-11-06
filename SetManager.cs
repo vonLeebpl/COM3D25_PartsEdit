@@ -339,6 +339,11 @@ namespace CM3D2.PartsEdit.Plugin {
                 string guid = MaidGuid(maid);
                 if (string.IsNullOrEmpty(guid)) continue;
                 stillHere.Add(guid);
+                if (Db.LibraryService.HasAutoLoad(maid)) {
+                    // pokojowki z biblioteki: synchronizacja z ubraniem (warunki wpisow), nie jednorazowy autoload
+                    Db.LibraryService.TickSync(maid, now);
+                    continue;
+                }
                 if (appliedAutoload.Contains(guid)) continue;
                 if (!MaidBodyReady(maid)) continue;
                 AutoloadWatch watch;

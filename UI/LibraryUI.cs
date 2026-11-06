@@ -32,6 +32,10 @@ namespace CM3D2.PartsEdit.Plugin {
         bool addSetShowOthers = false;
         bool setAddShowOthers = false;
 
+        // wpis, ktorego warunki sa rozwiniete w zakladce Library
+        Guid conditionsOpenId = Guid.Empty;
+        bool conditionsFromWornOpen = false;
+
         // wpis otwarty przyciskiem Edit - mozna go potem zaktualizowac zamiast zapisywac nowy
         Guid editingId = Guid.Empty;
 
@@ -315,6 +319,110 @@ namespace CM3D2.PartsEdit.Plugin {
             UIUtil.EndoIndentArea();
         }
 
+        void Resync(Maid maid) {
+            if (maid) LibraryService.RequestSync(maid);
+        }
+
+        static string KindLabel(ConditionKind kind) {
+            switch (kind) {
+                case ConditionKind.SlotEquipped: return TL.CondKindSlot;
+                case ConditionKind.MenuFile: return TL.CondKindMenu;
+                case ConditionKind.ObjectName: return TL.CondKindObject;
+                default: return TL.CondKindModel;
+            }
+        }
+
+        // Edytor warunkow wpisu (jak w SKM): wlacznik, wszystkie/ktorykolwiek, lista warunkow z wzorcami (* ?), negacja,
+        // dodawanie z aktualnie zalozonego przedmiotu oraz podglad, czy to pasuje do tego, co pokojowka ma teraz na sobie.
+        void DrawConditionsEditor(Maid maid, ModEntry e) {
+            UIUtil.BeginIndentArea();
+
+            bool use = GUILayout.Toggle(e.UseConditions, TL.UseConditions, UIParams.Instance.tStyle);
+            if (use != e.UseConditions) { e.UseConditions = use; Save(); Resync(maid); }
+
+            if (e.UseConditions) {
+                int mode = GUILayout.Toolbar(e.RequireAll ? 0 : 1, new string[] { TL.CondAll, TL.CondAny }, UIParams.Instance.tbStyle);
+                if ((mode == 0) != e.RequireAll) { e.RequireAll = mode == 0; Save(); Resync(maid); }
+
+                List<WornItem> worn = maid ? LibraryService.WornItems(maid) : new List<WornItem>();
+                List<ConditionResult> results = ConditionLogic.Explain(e, worn);
+
+                EntryCondition remove = null;
+                for (int i = 0; i < e.Conditions.Count; i++) {
+                    EntryCondition c = e.Conditions[i];
+                    GUILayout.BeginVertical(UIParams.Instance.boxStyle);
+
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button(KindLabel(c.Kind), UIParams.Instance.bStyle)) {
+                        c.Kind = (ConditionKind)(((int)c.Kind + 1) % 4);
+                        Save(); Resync(maid);
+                    }
+                    bool neg = GUILayout.Toggle(c.Negate, "NOT", UIParams.Instance.tStyle, GUILayout.Width(70));
+                    if (neg != c.Negate) { c.Negate = neg; Save(); Resync(maid); }
+                    if (GUILayout.Button("x", UIParams.Instance.bStyle, GUILayout.Width(32))) remove = c;
+                    GUILayout.EndHorizontal();
+
+                    if (c.Kind != ConditionKind.SlotEquipped) {
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(TL.CondPattern, UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
+                        string pattern = GUILayout.TextField(c.Pattern, UIParams.Instance.textStyle);
+                        if (pattern != c.Pattern) { c.Pattern = pattern; Save(); Resync(maid); }
+                        GUILayout.EndHorizontal();
+                    }
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(TL.CondSlotHint, UIParams.Instance.lStyleS, GUILayout.ExpandWidth(false));
+                    string slotText = GUILayout.TextField(c.Slot, UIParams.Instance.textStyle, GUILayout.Width(110));
+                    if (slotText != c.Slot) { c.Slot = slotText; Save(); Resync(maid); }
+                    GUILayout.EndHorizontal();
+
+                    if (maid && i < results.Count) {
+                        GUILayout.Label((results[i].Result ? "[OK] " : "[--] ") + (results[i].Found.Length > 0 ? results[i].Found : ""), UIParams.Instance.lStyleS);
+                    }
+                    GUILayout.EndVertical();
+                }
+                if (remove != null) { e.Conditions.Remove(remove); Save(); Resync(maid); }
+
+                GUILayout.Label(TL.CondWildcardHint, UIParams.Instance.lStyleS);
+
+                if (GUILayout.Button(TL.CondAdd, UIParams.Instance.bStyle)) {
+                    e.Conditions.Add(new EntryCondition());
+                    Save(); Resync(maid);
+                }
+
+                conditionsFromWornOpen = GUILayout.Toggle(conditionsFromWornOpen, TL.CondFromWorn, UIParams.Instance.tStyle);
+                if (conditionsFromWornOpen) {
+                    if (!maid) {
+                        GUILayout.Label(TL.CondNeedMaid, UIParams.Instance.lStyleS);
+                    } else {
+                        WornItem item = worn.FirstOrDefault(w => string.Equals(w.Slot, e.Slot, StringComparison.OrdinalIgnoreCase));
+                        if (item == null) {
+                            GUILayout.Label(TL.CondNoWorn, UIParams.Instance.lStyleS);
+                        } else {
+                            if (item.MenuFile.Length > 0 && GUILayout.Button(KindLabel(ConditionKind.MenuFile) + ": " + Short(item.MenuFile, 40), UIParams.Instance.bStyleL)) {
+                                e.Conditions.Add(new EntryCondition { Kind = ConditionKind.MenuFile, Pattern = item.MenuFile });
+                                Save(); Resync(maid);
+                            }
+                            if (item.ObjectName.Length > 0 && GUILayout.Button(KindLabel(ConditionKind.ObjectName) + ": " + Short(item.ObjectName, 40), UIParams.Instance.bStyleL)) {
+                                e.Conditions.Add(new EntryCondition { Kind = ConditionKind.ObjectName, Pattern = item.ObjectName });
+                                Save(); Resync(maid);
+                            }
+                            if (item.ModelFile.Length > 0 && GUILayout.Button(KindLabel(ConditionKind.ModelFile) + ": " + Short(item.ModelFile, 40), UIParams.Instance.bStyleL)) {
+                                e.Conditions.Add(new EntryCondition { Kind = ConditionKind.ModelFile, Pattern = item.ModelFile });
+                                Save(); Resync(maid);
+                            }
+                        }
+                    }
+                }
+
+                if (maid) {
+                    GUILayout.Label(ConditionLogic.Matches(e, worn) ? TL.CondMatchesNow : TL.CondNoMatchNow, UIParams.Instance.lStyle);
+                } else {
+                    GUILayout.Label(TL.CondNeedMaid, UIParams.Instance.lStyleS);
+                }
+            }
+            UIUtil.EndoIndentArea();
+        }
+
         // Przycisk Edit: naklada wpis, wybiera jego slot na glownym ekranie i wraca do edycji kosci.
         void StartEdit(Maid maid, ModEntry e) {
             string message = LibraryService.Edit(maid, e);
@@ -444,10 +552,19 @@ namespace CM3D2.PartsEdit.Plugin {
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
-                string matchLabel = e.Match == MatchMode.AnyInSlot ? TL.MatchAny : TL.MatchSame;
-                if (GUILayout.Button(matchLabel, UIParams.Instance.bStyle)) {
-                    e.Match = e.Match == MatchMode.AnyInSlot ? MatchMode.SameObjectName : MatchMode.AnyInSlot;
-                    Save();
+                if (e.UseConditions) {
+                    GUILayout.Label(e.RequireAll ? TL.CondActiveAll : TL.CondActiveAny, UIParams.Instance.lStyle);
+                } else {
+                    string matchLabel = e.Match == MatchMode.AnyInSlot ? TL.MatchAny : TL.MatchSame;
+                    if (GUILayout.Button(matchLabel, UIParams.Instance.bStyle)) {
+                        e.Match = e.Match == MatchMode.AnyInSlot ? MatchMode.SameObjectName : MatchMode.AnyInSlot;
+                        Save();
+                        Resync(maid);
+                    }
+                }
+                if (GUILayout.Button(TL.CondButton, UIParams.Instance.bStyle, GUILayout.Width(90))) {
+                    conditionsOpenId = conditionsOpenId == e.Id ? Guid.Empty : e.Id;
+                    conditionsFromWornOpen = false;
                 }
                 GUI.enabled = maid;
                 if (GUILayout.Button(TL.Apply, UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
@@ -459,7 +576,8 @@ namespace CM3D2.PartsEdit.Plugin {
                     if (confirmDelete == e.Id) delete = e.Id; else confirmDelete = e.Id;
                 }
                 GUILayout.EndHorizontal();
-                if (e.Match == MatchMode.SameObjectName) GUILayout.Label(string.Format(TL.ItemFmt, Short(e.ObjectName, 40)), UIParams.Instance.lStyle);
+                if (conditionsOpenId == e.Id) DrawConditionsEditor(maid, e);
+                if (!e.UseConditions && e.Match == MatchMode.SameObjectName) GUILayout.Label(string.Format(TL.ItemFmt, Short(e.ObjectName, 40)), UIParams.Instance.lStyle);
                 if (showAll || !maid) GUILayout.Label(string.IsNullOrEmpty(e.OwnerName) ? TL.NoOwner : string.Format(TL.OwnerFmt, e.OwnerName), UIParams.Instance.lStyleS);
 
                 // Poza korzenia obiektu (Maid Parts). Korzen obraca/przesuwa caly szkielet slotu jak sztywna bryle, wiec zapisany

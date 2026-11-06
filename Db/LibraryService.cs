@@ -8,7 +8,7 @@ namespace CM3D2.PartsEdit.Plugin.Db {
         Applied,
         UnknownSlot,        // pokojowka nie ma takiego slotu
         SlotEmpty,          // w slocie nic nie jest zalozone
-        ObjectNameMismatch  // wpis wymaga tej samej nazwy obiektu (MatchMode.SameObjectName), a zalozono inny przedmiot
+        ConditionsNotMet    // zalozony przedmiot nie spelnia warunkow wpisu (warunki / tryb dopasowania)
     }
 
     internal class ApplyResult {
@@ -24,7 +24,7 @@ namespace CM3D2.PartsEdit.Plugin.Db {
                 case ApplyStatus.Applied: return TL.StatusApplied;
                 case ApplyStatus.UnknownSlot: return TL.StatusUnknownSlot;
                 case ApplyStatus.SlotEmpty: return TL.StatusSlotEmpty;
-                default: return TL.StatusNameMismatch;
+                default: return TL.StatusConditions;
             }
         }
     }
@@ -44,6 +44,117 @@ namespace CM3D2.PartsEdit.Plugin.Db {
 #endif
         }
 
+        // Co pokojowka ma teraz na sobie (slot, nazwa obiektu, plik menu i modelu) - wejscie dla warunkow wpisow.
+        public static List<WornItem> WornItems(Maid maid) {
+            List<WornItem> list = new List<WornItem>();
+            if (!maid || maid.body0 == null || maid.body0.goSlot == null) return list;
+            List<TBodySkin> slots = maid.body0.goSlot.GetListParents();
+            for (int i = 0; i < slots.Count; i++) {
+                TBodySkin tbs = slots[i];
+                if (tbs == null || !tbs.obj || !tbs.boVisible) continue;
+                WornItem item = new WornItem();
+                item.Slot = SlotUtil.GetSlotName(i);
+                item.Category = tbs.Category ?? "";
+                item.ObjectName = tbs.obj.name;
+                item.MenuFile = (tbs.m_mp != null && tbs.m_mp.strFileName != null) ? tbs.m_mp.strFileName : "";
+                item.ModelFile = tbs.m_strModelFileName ?? "";
+                list.Add(item);
+            }
+            return list;
+        }
+
+        // ---------- synchronizacja z ubraniem (jak w SKM: warunki sprawdzane przy kazdej zmianie ubrania) ----------
+
+        class SyncWatch {
+            public string signature = "";
+            public string syncedSignature;   // null = jeszcze nie synchronizowano / wymus ponowne sprawdzenie
+            public float nextCheck;
+        }
+
+        static readonly Dictionary<string, SyncWatch> syncWatches = new Dictionary<string, SyncWatch>();
+        // co zastosowano w tej sesji: guid pokojowki -> id wpisu -> obiekt, na ktory nalozono
+        static readonly Dictionary<string, Dictionary<Guid, GameObject>> syncedOn = new Dictionary<string, Dictionary<Guid, GameObject>>();
+
+        static string Signature(Maid maid) {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            List<TBodySkin> slots = maid.body0.goSlot.GetListParents();
+            for (int i = 0; i < slots.Count; i++) {
+                TBodySkin tbs = slots[i];
+                sb.Append(i).Append(':').Append(tbs != null && tbs.obj ? tbs.obj.name : "-").Append(tbs != null && tbs.boVisible ? "+" : "").Append(';');
+            }
+            return sb.ToString();
+        }
+
+        // Wymusza ponowne sprawdzenie warunkow tej pokojowki przy najblizszym ticku (np. po edycji warunkow).
+        public static void RequestSync(Maid maid) {
+            if (!maid) return;
+            SyncWatch w;
+            if (syncWatches.TryGetValue(SetManager.MaidGuid(maid), out w)) w.syncedSignature = null;
+        }
+
+        // Wolane co klatke z SetManager.TickAutoload dla pokojowek z wlaczonym autoloadem: po ustabilizowaniu sie ubrania
+        // (0,25 s bez zmian) synchronizuje wpisy; ponownie przy kazdej zmianie ubrania.
+        public static void TickSync(Maid maid, float now) {
+            if (!maid || maid.body0 == null || maid.body0.goSlot == null || maid.IsBusy) return;
+            string guid = SetManager.MaidGuid(maid);
+            SyncWatch w;
+            if (!syncWatches.TryGetValue(guid, out w)) {
+                w = new SyncWatch();
+                w.signature = Signature(maid);
+                w.nextCheck = now + 0.25f;
+                syncWatches[guid] = w;
+                return;
+            }
+            if (now < w.nextCheck) return;
+            w.nextCheck = now + 0.25f;
+            string sig = Signature(maid);
+            if (sig != w.signature) { w.signature = sig; return; }   // ubranie jeszcze sie zmienia
+            if (w.syncedSignature == sig) return;                    // nic nowego
+            w.syncedSignature = sig;
+            foreach (ApplyResult r in SyncMaid(maid)) Log.Info("Sync " + r);
+        }
+
+        // Nakladamy wpisy, ktorych warunki sa spelnione (a jeszcze nie nalozono ich na ten przedmiot), i cofamy te, ktorych
+        // warunki przestaly byc spelnione. Zwraca wyniki nalozen.
+        public static List<ApplyResult> SyncMaid(Maid maid) {
+            List<ApplyResult> results = new List<ApplyResult>();
+            if (Db == null || !maid) return results;
+            string guid = SetManager.MaidGuid(maid);
+            Dictionary<Guid, GameObject> map;
+            if (!syncedOn.TryGetValue(guid, out map)) { map = new Dictionary<Guid, GameObject>(); syncedOn[guid] = map; }
+
+            List<WornItem> worn = WornItems(maid);
+            List<ModEntry> effective = Db.EffectiveEntries(guid);
+            HashSet<Guid> effectiveIds = new HashSet<Guid>(effective.Select(e => e.Id));
+
+            foreach (ModEntry entry in effective) {
+                int slotNo = SetManager.FindSlotId(maid, entry.Slot);
+                GameObject obj = slotNo == (int)EXSlot.None ? null : SetManager.GetSlotObject(maid, slotNo);
+                bool should = obj && (slotNo == (int)EXSlot.Base || ConditionLogic.Matches(entry, worn));
+                GameObject was;
+                bool had = map.TryGetValue(entry.Id, out was);
+                if (should) {
+                    if (!had || was != obj) {
+                        results.Add(Apply(maid, entry));
+                        map[entry.Id] = obj;
+                    }
+                } else if (had) {
+                    if (was && obj == was) Revert(maid, new List<ModEntry> { entry });   // ten sam przedmiot, ale warunki juz nie pasuja
+                    map.Remove(entry.Id);
+                }
+            }
+
+            // wpisy, ktore przestaly byc przypisane do pokojowki
+            List<Guid> gone = map.Keys.Where(id => !effectiveIds.Contains(id)).ToList();
+            foreach (Guid id in gone) {
+                GameObject was = map[id];
+                ModEntry removed;
+                if (was && Db.Entries.TryGetValue(id, out removed)) Revert(maid, new List<ModEntry> { removed });
+                map.Remove(id);
+            }
+            return results;
+        }
+
         // Naklada jeden wpis na slot pokojowki, w ktorym jest zalozony pasujacy przedmiot.
         public static ApplyResult Apply(Maid maid, ModEntry entry) {
             ApplyResult result = new ApplyResult();
@@ -53,7 +164,7 @@ namespace CM3D2.PartsEdit.Plugin.Db {
             if (slotNo == (int)EXSlot.None) { result.Status = ApplyStatus.UnknownSlot; return result; }
             GameObject obj = SetManager.GetSlotObject(maid, slotNo);
             if (!obj) { result.Status = ApplyStatus.SlotEmpty; return result; }
-            if (!entry.Matches(obj.name)) { result.Status = ApplyStatus.ObjectNameMismatch; return result; }
+            if (slotNo != (int)EXSlot.Base && !ConditionLogic.Matches(entry, WornItems(maid))) { result.Status = ApplyStatus.ConditionsNotMet; return result; }
 
             SetManager.Apply(maid, slotNo, obj, DbConvert.ToObjectData(entry));
             result.Status = ApplyStatus.Applied;

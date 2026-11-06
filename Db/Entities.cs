@@ -29,6 +29,12 @@ namespace CM3D2.PartsEdit.Plugin.Db {
         public string OwnerGuid { get; set; }
         public string OwnerName { get; set; }
 
+        // Warunki dzialania wpisu (patrz Conditions.cs). Gdy UseConditions = false, obowiazuje stary tryb dopasowania (Match).
+        public bool UseConditions { get; set; }
+        // true = wszystkie warunki musza byc spelnione, false = wystarczy ktorykolwiek
+        public bool RequireAll { get; set; }
+        public List<EntryCondition> Conditions { get; set; }
+
         public ModEntry() {
             Id = Guid.NewGuid();
             Name = "";
@@ -41,6 +47,9 @@ namespace CM3D2.PartsEdit.Plugin.Db {
             Source = "";
             OwnerGuid = "";
             OwnerName = "";
+            UseConditions = false;
+            RequireAll = true;
+            Conditions = new List<EntryCondition>();
         }
 
         // Czy wpis pasuje do przedmiotu o podanej nazwie obiektu (slot sprawdza wywolujacy).

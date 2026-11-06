@@ -217,3 +217,22 @@ IK保存	Save IK
 （作成者不明）	(no maid recorded)
 他のメイド用の変更も表示	Also show modifications made for other maids
 他のメイド用のセットも表示	Also show sets made for other maids
+条件を満たしていません（現在の装着品が合いません）	conditions are not met (the worn item does not fit)
+条件	Conditions
+条件あり（すべて）	conditions on (all)
+条件あり（いずれか）	conditions on (any)
+条件を使う	Use conditions
+すべて満たす	All must match
+いずれか満たす	Any matches
+スロット装着	Slot worn
+menuファイル	Menu file
+modelファイル	Model file
+パターン	Pattern
+スロット（空欄=このスロット、*=すべて）	Slot (empty = this slot, * = any)
+* = 任意の文字列、? = 任意の1文字	* = any text, ? = one character
+＋条件を追加	+ Add condition
+＋装着中のアイテムから追加	+ Add from the worn item
+（このスロットには何も装着されていません）	(nothing is worn in this slot)
+現在の装着品に一致します	Matches what is worn now
+現在の装着品には一致しません	Does not match what is worn now
+（装着品と照合するにはメイドを選択してください）	(select a maid to check against the worn items)

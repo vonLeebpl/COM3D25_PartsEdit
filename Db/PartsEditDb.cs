@@ -92,6 +92,11 @@ namespace CM3D2.PartsEdit.Plugin.Db {
                 if (e.Source == null) e.Source = "";
                 if (e.OwnerGuid == null) e.OwnerGuid = "";
                 if (e.OwnerName == null) e.OwnerName = "";
+                if (e.Conditions == null) e.Conditions = new List<EntryCondition>();
+                foreach (EntryCondition c in e.Conditions) {
+                    if (c.Slot == null) c.Slot = "";
+                    if (c.Pattern == null) c.Pattern = "";
+                }
                 if (e.Root == null) e.Root = new BoneRecord();
                 if (e.Bones == null) e.Bones = new List<BoneRecord>();
             }

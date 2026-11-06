@@ -58,6 +58,22 @@ Open the **Library** button on the main screen. A *modification* is the set of b
 
 Everything is stored in `BepInEx\config\PartsEdit\PartsEdit.db.json`. Old preset / set xml files are imported once at the first start.
 
+### Conditions: when does a modification apply
+
+Like in ShapeKeyMaster, a modification can have **conditions** (Library tab, **Conditions** button on the modification).
+Without conditions it uses the simple *Any item in slot / Same item only* switch. With **Use conditions** on:
+
+- Choose **All must match** or **Any matches**, then add conditions. Each one can be negated (**NOT**):
+  - **Slot worn** - something is worn in a slot (empty slot field = the modification's own slot, `*` = any slot),
+  - **Menu file** - the `.menu` file name of the worn item matches a pattern, e.g. `*heel.menu`,
+  - **Object name** - e.g. `_SM_hhmod*heel`,
+  - **Model file** - the `.model` file name.
+- Patterns are case-insensitive; `*` is any text and `?` one character. A pattern without them must match the whole name.
+- **+ Add from the worn item** fills a condition from what the selected maid wears now, and the editor shows whether the
+  modification matches the current outfit (`[OK]` / `[--]` per condition).
+- Maids with **Auto-load** on are kept in sync with their outfit: when the clothes change, modifications whose conditions
+  are met are applied to the new item and the ones that no longer match are reverted. Manual **Apply** respects conditions too.
+
 ### Shoes tilted for high heels (object root pose)
 
 Rotating the *object root* of a slot turns the whole slot skeleton like one rigid body around a single point, so it only

@@ -155,6 +155,7 @@
     <Compile Include="Util\SlotUtil.cs" />
     <Compile Include="Util\Text.cs" />
     <Compile Include="Db\Records.cs" />
+    <Compile Include="Db\Conditions.cs" />
     <Compile Include="Db\Entities.cs" />
     <Compile Include="Db\PartsEditDb.cs" />
     <Compile Include="Db\DbConvert.cs" />
