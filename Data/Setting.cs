@@ -24,7 +24,10 @@ namespace CM3D2.PartsEdit.Plugin {
 
         public static SettingValue<Color> normalBoneColor = new SettingValue<Color>(Color.white);
         public static SettingValue<Color> selectBoneColor = new SettingValue<Color>(Color.red);
-        public static SettingValue<Color> highlightColor = new SettingValue<Color>(ColorUtil.FromHex("b80000"));
+        // Kolor podswietlenia interfejsu (zaznaczone przyciski, wybrane pozycje list). Domyslnie chlodny szary; dawny domyslny
+        // czerwony (#B80000) zapisany w ini jest zamieniany na ten szary przy wczytaniu.
+        public const string DefaultHighlightHex = "#6F7078";
+        public static SettingValue<Color> highlightColor = new SettingValue<Color>(ColorUtil.ParseColor(DefaultHighlightHex));
         public static SettingValue<Color> ikChainColor = new SettingValue<Color>(ColorUtil.FromHex("0000bf"));
         public static bool experimental = false;
         public static float physicsRadius = 0.05f;
@@ -75,7 +78,9 @@ namespace CM3D2.PartsEdit.Plugin {
             boneSelectKey = (KeyCode)IniUtil.GetIntValue("BoneDisplay", "BoneSelectKey", (int)KeyCode.LeftAlt);
             normalBoneColor = new SettingValue<Color>(ColorUtil.GetColorFromName(IniUtil.GetStringValue("BoneDisplay", "NormalBoneColor", "white")));
             selectBoneColor = new SettingValue<Color>(ColorUtil.GetColorFromName(IniUtil.GetStringValue("BoneDisplay", "SelectBoneColor", "red")));
-            highlightColor = new SettingValue<Color>(ColorUtil.ParseColor(IniUtil.GetStringValue("BoneDisplay", "HighlightColor", "#b80000")));
+            string highlightHex = IniUtil.GetStringValue("BoneDisplay", "HighlightColor", DefaultHighlightHex);
+            if (highlightHex.Trim().TrimStart('#').ToLowerInvariant() == "b80000") highlightHex = DefaultHighlightHex;
+            highlightColor = new SettingValue<Color>(ColorUtil.ParseColor(highlightHex));
             ikChainColor = new SettingValue<Color>(ColorUtil.ParseColor(IniUtil.GetStringValue("BoneDisplay", "IKChainColor", "#0000bf")));
             windowWidth = IniUtil.GetFloatValue("Window", "Width", 720f);
             windowHeight = IniUtil.GetFloatValue("Window", "Height", 850f);

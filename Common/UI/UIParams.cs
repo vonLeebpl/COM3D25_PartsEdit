@@ -201,11 +201,11 @@ internal class UIParams {
         listStyle.onNormal.background = tex;
         listStyle.onHover.background = tex;
         listStyle.onActive.background = tex;
-        listStyle.hover.textColor = color;
+        Color text = Color.Lerp(color, Color.white, 0.7f); // jasny odcien podswietlenia: czytelny tekst na ciemnym tle
+        listStyle.hover.textColor = text;
         listStyle.onHover.textColor = Color.white;
         listStyle.onNormal.textColor = Color.white;
         listStyle.onActive.textColor = Color.white;
-        Color text = color;
         tStyle.onNormal.textColor = text;
         tStyle.onHover.textColor = text;
         tStyle.onActive.textColor = text;
