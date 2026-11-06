@@ -239,7 +239,10 @@ namespace CM3D2.PartsEdit.Plugin.Db {
             }
             data.transformDataList = data.transformDataList.Where(t => changed.Contains(t.name)).ToList();
             if (!rootChanged) data.bMaidParts = false;
-            return DbConvert.FromObjectData(data, name, "", DateTime.UtcNow);
+            ModEntry entry = DbConvert.FromObjectData(data, name, "", DateTime.UtcNow);
+            entry.OwnerGuid = SetManager.MaidGuid(maid) ?? "";
+            entry.OwnerName = MaidName(maid);
+            return entry;
         }
     }
 }

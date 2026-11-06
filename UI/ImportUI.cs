@@ -129,7 +129,7 @@ namespace CM3D2.PartsEdit.Plugin {
             {
                 GUILayout.Label(Text.Category, UIParams.Instance.lStyle);
                 GUILayout.FlexibleSpace();
-                int tempNum = GUILayout.Toolbar(cateSelectNum, cateSelectList, UIParams.Instance.tStyle);
+                int tempNum = GUILayout.Toolbar(cateSelectNum, cateSelectList, UIParams.Instance.tbStyle);
                 if (cateSelectNum != tempNum) {
                     cateSelectNum = tempNum;
                     ResetCategorySelect();
@@ -152,7 +152,7 @@ namespace CM3D2.PartsEdit.Plugin {
             {
                 GUILayout.Label(Text.ObjectName, UIParams.Instance.lStyle);
                 GUILayout.FlexibleSpace();
-                int tempNum = GUILayout.Toolbar(objectNameSelectNum, objectNameSelectList, UIParams.Instance.tStyle);
+                int tempNum = GUILayout.Toolbar(objectNameSelectNum, objectNameSelectList, UIParams.Instance.tbStyle);
                 if (objectNameSelectNum != tempNum) {
                     objectNameSelectNum = tempNum;
                     ResetObjectNameSelect();

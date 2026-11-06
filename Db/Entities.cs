@@ -25,6 +25,10 @@ namespace CM3D2.PartsEdit.Plugin.Db {
         // skad pochodzi wpis (np. "xml:kelly_shoe" po migracji), pozwala uniknac duplikatow przy ponownej migracji
         public string Source { get; set; }
 
+        // dla ktorej pokojowki wpis zapisano (maid.status.guid); puste dla wpisow z migracji. Sluzy do filtrowania listy.
+        public string OwnerGuid { get; set; }
+        public string OwnerName { get; set; }
+
         public ModEntry() {
             Id = Guid.NewGuid();
             Name = "";
@@ -35,6 +39,8 @@ namespace CM3D2.PartsEdit.Plugin.Db {
             Root = new BoneRecord();
             Bones = new List<BoneRecord>();
             Source = "";
+            OwnerGuid = "";
+            OwnerName = "";
         }
 
         // Czy wpis pasuje do przedmiotu o podanej nazwie obiektu (slot sprawdza wywolujacy).
@@ -51,6 +57,8 @@ namespace CM3D2.PartsEdit.Plugin.Db {
         public DateTime Created { get; set; }
         public List<Guid> EntryIds { get; set; }
         public string Source { get; set; }
+        public string OwnerGuid { get; set; }
+        public string OwnerName { get; set; }
 
         public ModSet() {
             Id = Guid.NewGuid();
@@ -58,6 +66,8 @@ namespace CM3D2.PartsEdit.Plugin.Db {
             Created = DateTime.UtcNow;
             EntryIds = new List<Guid>();
             Source = "";
+            OwnerGuid = "";
+            OwnerName = "";
         }
     }
 

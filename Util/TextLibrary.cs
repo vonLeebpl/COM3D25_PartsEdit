@@ -59,6 +59,13 @@ namespace CM3D2.PartsEdit.Plugin {
         public static readonly string Rename = Tr.T("名前変更");
         public static readonly string Delete = Tr.T("削除");
         public static readonly string DeleteSet = Tr.T("セット削除");
+        public static readonly string FilterThisMaid = Tr.T("このメイド");
+        public static readonly string FilterAll = Tr.T("すべて");
+        public static readonly string NoMineHint = Tr.T("（このメイド用の変更はまだありません。「すべて」で他の変更を確認できます）");
+        public static readonly string OwnerFmt = Tr.T("作成者: {0}");
+        public static readonly string NoOwner = Tr.T("（作成者不明）");
+        public static readonly string ShowOthers = Tr.T("他のメイド用の変更も表示");
+        public static readonly string ShowOtherSets = Tr.T("他のメイド用のセットも表示");
         public static readonly string NewSet = Tr.T("新規セット");
         public static readonly string Create = Tr.T("作成");
         public static readonly string NoSetsYet = Tr.T("（セットはまだありません）");

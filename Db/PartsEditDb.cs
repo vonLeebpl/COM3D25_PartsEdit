@@ -90,6 +90,8 @@ namespace CM3D2.PartsEdit.Plugin.Db {
                 if (e.Slot == null) e.Slot = "";
                 if (e.ObjectName == null) e.ObjectName = "";
                 if (e.Source == null) e.Source = "";
+                if (e.OwnerGuid == null) e.OwnerGuid = "";
+                if (e.OwnerName == null) e.OwnerName = "";
                 if (e.Root == null) e.Root = new BoneRecord();
                 if (e.Bones == null) e.Bones = new List<BoneRecord>();
             }
@@ -97,6 +99,8 @@ namespace CM3D2.PartsEdit.Plugin.Db {
                 if (s.Name == null) s.Name = "";
                 if (s.EntryIds == null) s.EntryIds = new List<Guid>();
                 if (s.Source == null) s.Source = "";
+                if (s.OwnerGuid == null) s.OwnerGuid = "";
+                if (s.OwnerName == null) s.OwnerName = "";
             }
             foreach (MaidBinding m in Maids.Values) {
                 if (m.EntryIds == null) m.EntryIds = new List<Guid>();
@@ -171,6 +175,31 @@ namespace CM3D2.PartsEdit.Plugin.Db {
             ModSet set;
             if (!Sets.TryGetValue(setId, out set)) return false;
             return set.EntryIds.RemoveAll(e => e == entryId) > 0;
+        }
+
+        // ---------- "tej pokojowki" (filtr listy) ----------
+
+        // Wpis nalezy do pokojowki, gdy zapisano go przy niej albo jest do niej przypisany (bezposrednio lub przez zestaw).
+        // Pusty guid (brak wybranej pokojowki) = nie filtrujemy.
+        public bool IsEntryOfMaid(string maidGuid, ModEntry entry) {
+            if (string.IsNullOrEmpty(maidGuid)) return true;
+            if (entry.OwnerGuid == maidGuid) return true;
+            MaidBinding b;
+            if (!Maids.TryGetValue(maidGuid, out b)) return false;
+            if (b.EntryIds.Contains(entry.Id)) return true;
+            foreach (Guid setId in b.SetIds) {
+                ModSet set;
+                if (Sets.TryGetValue(setId, out set) && set.EntryIds.Contains(entry.Id)) return true;
+            }
+            return false;
+        }
+
+        // Zestaw nalezy do pokojowki, gdy utworzono go przy niej albo jest do niej przypisany.
+        public bool IsSetOfMaid(string maidGuid, ModSet set) {
+            if (string.IsNullOrEmpty(maidGuid)) return true;
+            if (set.OwnerGuid == maidGuid) return true;
+            MaidBinding b;
+            return Maids.TryGetValue(maidGuid, out b) && b.SetIds.Contains(set.Id);
         }
 
         // ---------- pokojowki ----------

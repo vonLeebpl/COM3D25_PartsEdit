@@ -26,6 +26,12 @@ namespace CM3D2.PartsEdit.Plugin {
         string renameText = "";
         Guid confirmDelete = Guid.Empty;
 
+        // filtr wlasciciela: false = tylko ta pokojowka (domyslnie), true = wszystkie
+        bool showAll = false;
+        bool addShowOthers = false;
+        bool addSetShowOthers = false;
+        bool setAddShowOthers = false;
+
         // wpis otwarty przyciskiem Edit - mozna go potem zaktualizowac zamiast zapisywac nowy
         Guid editingId = Guid.Empty;
 
@@ -92,7 +98,7 @@ namespace CM3D2.PartsEdit.Plugin {
 
         void DrawTabs() {
             string[] names = new string[] { TL.TabMaid, string.Format(TL.TabLibraryFmt, Db.Entries.Count), string.Format(TL.TabSetsFmt, Db.Sets.Count) };
-            int selected = GUILayout.Toolbar((int)tab, names, UIParams.Instance.bStyle);
+            int selected = GUILayout.Toolbar((int)tab, names, UIParams.Instance.tbStyle);
             if (selected != (int)tab) {
                 tab = (Tab)selected;
                 page = 0; addPage = 0; setsPage = 0; setAddPage = 0;
@@ -157,6 +163,17 @@ namespace CM3D2.PartsEdit.Plugin {
                 if (Db.Entries.TryGetValue(id, out e)) list.Add(e);
             }
             return list;
+        }
+
+        // Wpisy / zestawy "tej pokojowki": zapisane przy niej albo do niej przypisane (bezposrednio lub przez zestaw).
+        bool Mine(Maid maid, ModEntry e) { return !maid || Db.IsEntryOfMaid(SetManager.MaidGuid(maid), e); }
+        bool MineSet(Maid maid, ModSet s) { return !maid || Db.IsSetOfMaid(SetManager.MaidGuid(maid), s); }
+
+        // Przelacznik widoku (zakladki Library i Sets): tylko ta pokojowka (domyslnie) / wszystkie.
+        void DrawOwnerFilter(Maid maid) {
+            if (!maid) return;
+            int sel = GUILayout.Toolbar(showAll ? 1 : 0, new string[] { TL.FilterThisMaid, TL.FilterAll }, UIParams.Instance.tbStyle);
+            if ((sel == 1) != showAll) { showAll = sel == 1; page = 0; setsPage = 0; }
         }
 
         IEnumerable<ModEntry> FilterEntries(string text) {
@@ -228,7 +245,8 @@ namespace CM3D2.PartsEdit.Plugin {
             }
             addSetOpen = GUILayout.Toggle(addSetOpen, TL.AddSet, UIParams.Instance.tStyle);
             if (addSetOpen) {
-                List<ModSet> choices = Db.Sets.Values.Where(s => b == null || !b.SetIds.Contains(s.Id)).OrderBy(s => s.Name).ToList();
+                addSetShowOthers = GUILayout.Toggle(addSetShowOthers, TL.ShowOtherSets, UIParams.Instance.tStyle);
+                List<ModSet> choices = Db.Sets.Values.Where(s => (b == null || !b.SetIds.Contains(s.Id)) && (addSetShowOthers || MineSet(maid, s))).OrderBy(s => s.Name).ToList();
                 if (choices.Count == 0) GUILayout.Label(TL.NoOtherSets, UIParams.Instance.lStyle);
                 foreach (ModSet s in choices.Take(PageSize)) {
                     if (GUILayout.Button(Short(s.Name, 40) + " (" + s.EntryIds.Count + ")", UIParams.Instance.bStyleL)) {
@@ -276,11 +294,13 @@ namespace CM3D2.PartsEdit.Plugin {
                 if (s2 != addEntrySearch) { addEntrySearch = s2; addPage = 0; }
                 GUILayout.EndHorizontal();
 
-                // domyslnie tylko wpisy pasujace do slotow zalozonych na pokojowce
+                addShowOthers = GUILayout.Toggle(addShowOthers, TL.ShowOthers, UIParams.Instance.tStyle);
+
+                // domyslnie tylko wpisy tej pokojowki, pasujace do zalozonych na niej przedmiotow
                 HashSet<string> equipped = new HashSet<string>(
                     SetManager.GetEquippedSlotIds(maid).Select(id => SlotUtil.GetSlotName(id)), StringComparer.OrdinalIgnoreCase);
                 List<ModEntry> choices = FilterEntries(addEntrySearch)
-                    .Where(e => equipped.Contains(e.Slot) && (b == null || !b.EntryIds.Contains(e.Id)))
+                    .Where(e => equipped.Contains(e.Slot) && (b == null || !b.EntryIds.Contains(e.Id)) && (addShowOthers || Mine(maid, e)))
                     .OrderBy(e => e.Name).ToList();
                 if (choices.Count == 0) GUILayout.Label(TL.NoMatchingMods, UIParams.Instance.lStyle);
                 foreach (ModEntry e in Slice(choices, addPage)) {
@@ -385,6 +405,7 @@ namespace CM3D2.PartsEdit.Plugin {
         // ---------- zakladka Library ----------
 
         void DrawLibraryTab(Maid maid) {
+            DrawOwnerFilter(maid);
             GUILayout.BeginHorizontal();
             GUILayout.Label(TL.Search, UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
             string s2 = GUILayout.TextField(search, UIParams.Instance.textStyle);
@@ -398,8 +419,8 @@ namespace CM3D2.PartsEdit.Plugin {
             if (GUILayout.Button(ascending ? TL.Asc : TL.Desc, UIParams.Instance.bStyle, GUILayout.Width(60))) ascending = !ascending;
             GUILayout.EndHorizontal();
 
-            List<ModEntry> entries = Sorted(FilterEntries(search)).ToList();
-            if (entries.Count == 0) GUILayout.Label(TL.LibraryEmpty, UIParams.Instance.lStyle);
+            List<ModEntry> entries = Sorted(FilterEntries(search).Where(en => showAll || Mine(maid, en))).ToList();
+            if (entries.Count == 0) GUILayout.Label(maid && !showAll ? TL.NoMineHint : TL.LibraryEmpty, UIParams.Instance.lStyle);
 
             Guid delete = Guid.Empty;
             foreach (ModEntry e in Slice(entries, page)) {
@@ -439,6 +460,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
                 GUILayout.EndHorizontal();
                 if (e.Match == MatchMode.SameObjectName) GUILayout.Label(string.Format(TL.ItemFmt, Short(e.ObjectName, 40)), UIParams.Instance.lStyle);
+                if (showAll || !maid) GUILayout.Label(string.IsNullOrEmpty(e.OwnerName) ? TL.NoOwner : string.Format(TL.OwnerFmt, e.OwnerName), UIParams.Instance.lStyleS);
 
                 // Poza korzenia obiektu (Maid Parts). Korzen obraca/przesuwa caly szkielet slotu jak sztywna bryle, wiec zapisany
                 // niezerowy obrot potrafi "rozjechac" przedmiot po zmianie pozy postaci - dlatego mozna to wylaczyc dla wpisu.
@@ -487,6 +509,7 @@ namespace CM3D2.PartsEdit.Plugin {
             GUI.enabled = !string.IsNullOrEmpty(newSetName.Trim());
             if (GUILayout.Button(TL.Create, UIParams.Instance.bStyle, GUILayout.Width(80))) {
                 ModSet created = Db.AddSet(newSetName.Trim());
+                if (maid) { created.OwnerGuid = SetManager.MaidGuid(maid) ?? ""; created.OwnerName = LibraryService.MaidName(maid); }
                 openSetId = created.Id;
                 newSetName = "";
                 Save();
@@ -495,7 +518,8 @@ namespace CM3D2.PartsEdit.Plugin {
             GUI.enabled = true;
             GUILayout.EndHorizontal();
 
-            List<ModSet> sets = Db.Sets.Values.OrderBy(s => s.Name).ToList();
+            DrawOwnerFilter(maid);
+            List<ModSet> sets = Db.Sets.Values.Where(s => showAll || MineSet(maid, s)).OrderBy(s => s.Name).ToList();
             if (sets.Count == 0) GUILayout.Label(TL.NoSetsYet, UIParams.Instance.lStyle);
 
             Guid deleteSet = Guid.Empty;
@@ -571,7 +595,8 @@ namespace CM3D2.PartsEdit.Plugin {
                 string s2 = GUILayout.TextField(setAddSearch, UIParams.Instance.textStyle);
                 if (s2 != setAddSearch) { setAddSearch = s2; setAddPage = 0; }
                 GUILayout.EndHorizontal();
-                List<ModEntry> choices = FilterEntries(setAddSearch).Where(e => !set.EntryIds.Contains(e.Id)).OrderBy(e => e.Name).ToList();
+                setAddShowOthers = GUILayout.Toggle(setAddShowOthers, TL.ShowOthers, UIParams.Instance.tStyle);
+                List<ModEntry> choices = FilterEntries(setAddSearch).Where(e => !set.EntryIds.Contains(e.Id) && (setAddShowOthers || Mine(maid, e))).OrderBy(e => e.Name).ToList();
                 if (choices.Count == 0) GUILayout.Label(TL.NothingToAdd, UIParams.Instance.lStyle);
                 foreach (ModEntry e in Slice(choices, setAddPage)) {
                     if (GUILayout.Button(Short(e.Name, 34) + "  [" + e.Slot + "]", UIParams.Instance.bStyleL)) {

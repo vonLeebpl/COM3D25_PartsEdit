@@ -12,7 +12,7 @@ namespace CM3D2.PartsEdit.Plugin {
             GUILayout.BeginHorizontal();
             GUILayout.Label(Text.ObjectSelectMode, UIParams.Instance.lStyle);
             GUILayout.FlexibleSpace();
-            Setting.targetSelectMode = GUILayout.Toolbar(Setting.targetSelectMode, targetSelectModeContents, UIParams.Instance.tStyle);
+            Setting.targetSelectMode = GUILayout.Toolbar(Setting.targetSelectMode, targetSelectModeContents, UIParams.Instance.tbStyle);
             GUILayout.EndHorizontal();
         }
     }

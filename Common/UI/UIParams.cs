@@ -41,6 +41,8 @@ internal class UIParams {
     public readonly GUIStyle bStyle = new GUIStyle();
     public readonly GUIStyle bStyleSC = new GUIStyle();
     public readonly GUIStyle bStyleL = new GUIStyle();
+    // przyciski grup wyboru (zamiast radio-buttonow): wcisniety = kolor wyrozniajacy, reszta wylaczona
+    public readonly GUIStyle tbStyle = new GUIStyle();
 
     public readonly GUIStyle tStyle = new GUIStyle();
     public readonly GUIStyle tStyleS = new GUIStyle();
@@ -153,7 +155,12 @@ internal class UIParams {
     }
 
     bool skinReady;
+    bool tbBuilt;
     public void EnsureSkin() {
+        if (!tbBuilt) {
+            tbBuilt = true;
+            BuildToolbarStyle(CM3D2.PartsEdit.Plugin.Setting.highlightColor.GetValue());
+        }
         if (skinReady) return;
         if (GUI.skin == null || GUI.skin.button == null || GUI.skin.button.normal.background == null) return;
         CopySkin(bStyle, GUI.skin.button);
@@ -213,6 +220,61 @@ internal class UIParams {
         textStyle.active.textColor = text;
         bStyle.hover.textColor = text;
         bStyle.onHover.textColor = text;
+        BuildToolbarStyle(color);
+    }
+
+    // Styl przyciskow grup wyboru (GUILayout.Toolbar). Wlasne tekstury (nie zaleza od skorki gry): ciemny przycisk z jasniejsza
+    // ramka, najechany jasniejszy, zaznaczony wypelniony kolorem wyrozniajacym (ten sam co podswietlenie list).
+    readonly Texture2D[] tbTextures = new Texture2D[4];
+    void BuildToolbarStyle(Color accent) {
+        for (int i = 0; i < tbTextures.Length; i++) {
+            if (tbTextures[i]) UnityEngine.Object.Destroy(tbTextures[i]);
+        }
+        Color edge = new Color(0.45f, 0.45f, 0.50f, 1f);
+        tbTextures[0] = ButtonTexture(new Color(0.17f, 0.17f, 0.19f, 0.96f), edge);
+        tbTextures[1] = ButtonTexture(new Color(0.28f, 0.28f, 0.32f, 0.96f), new Color(0.78f, 0.78f, 0.84f, 1f));
+        tbTextures[2] = ButtonTexture(new Color(0.10f, 0.10f, 0.12f, 0.96f), edge);
+        Color accentOpaque = new Color(accent.r, accent.g, accent.b, 1f);
+        tbTextures[3] = ButtonTexture(accentOpaque, Color.Lerp(accentOpaque, Color.white, 0.5f));
+
+        tbStyle.normal.background = tbTextures[0];
+        tbStyle.hover.background = tbTextures[1];
+        tbStyle.active.background = tbTextures[2];
+        tbStyle.focused.background = tbTextures[0];
+        tbStyle.onNormal.background = tbTextures[3];
+        tbStyle.onHover.background = tbTextures[3];
+        tbStyle.onActive.background = tbTextures[3];
+        tbStyle.onFocused.background = tbTextures[3];
+
+        Color txt = new Color(0.92f, 0.92f, 0.95f, 1f);
+        tbStyle.normal.textColor = txt;
+        tbStyle.hover.textColor = Color.white;
+        tbStyle.active.textColor = Color.white;
+        tbStyle.focused.textColor = txt;
+        tbStyle.onNormal.textColor = Color.white;
+        tbStyle.onHover.textColor = Color.white;
+        tbStyle.onActive.textColor = Color.white;
+        tbStyle.onFocused.textColor = Color.white;
+
+        tbStyle.border = new RectOffset(1, 1, 1, 1);
+        tbStyle.padding = new RectOffset(8, 8, 3, 3);
+        tbStyle.margin = new RectOffset(0, 0, 2, 2);
+        tbStyle.alignment = TextAnchor.MiddleCenter;
+        tbStyle.fontStyle = FontStyle.Normal;
+        tbStyle.clipping = TextClipping.Clip;
+        tbStyle.fontSize = fontSize > 0 ? fontSize : 14;
+    }
+
+    static Texture2D ButtonTexture(Color fill, Color edge) {
+        Texture2D tex = new Texture2D(3, 3, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Point;
+        for (int y = 0; y < 3; y++) {
+            for (int x = 0; x < 3; x++) {
+                tex.SetPixel(x, y, (x == 0 || x == 2 || y == 0 || y == 2) ? edge : fill);
+            }
+        }
+        tex.Apply();
+        return tex;
     }
 
     static void CopySkin(GUIStyle dst, GUIStyle src) {
@@ -267,6 +329,7 @@ internal class UIParams {
         bStyle.fontSize = fontSize;
         bStyleSC.fontSize = fontSizeS;
         bStyleL.fontSize = fontSize;
+        tbStyle.fontSize = fontSize;
         tStyle.fontSize = fontSize;
         tStyleS.fontSize = fontSizeS;
         tStyleSS.fontSize = fontSizeSS;

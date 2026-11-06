@@ -94,7 +94,7 @@ namespace CM3D2.PartsEdit.Plugin {
             {
                 GUILayout.Label(Text.BodyBoneDisplay, UIParams.Instance.lStyle);
                 GUILayout.FlexibleSpace();
-                int tempIndex = GUILayout.Toolbar((int)(Setting.bodyBoneDisplay.GetValue()), bodyBoneDsiplayContents, UIParams.Instance.tStyle);
+                int tempIndex = GUILayout.Toolbar((int)(Setting.bodyBoneDisplay.GetValue()), bodyBoneDsiplayContents, UIParams.Instance.tbStyle);
                 if(bodyBoneDisplayIndex != tempIndex) {
                     bodyBoneDisplayIndex = tempIndex;
                     Setting.bodyBoneDisplay.SetValue((BodyBoneDisplay)tempIndex);

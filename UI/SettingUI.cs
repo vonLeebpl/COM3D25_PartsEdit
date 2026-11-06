@@ -51,7 +51,7 @@ namespace CM3D2.PartsEdit.Plugin {
             {
                 GUILayout.Label(Text.BoneDisplay, UIParams.Instance.lStyle);
                 GUILayout.FlexibleSpace();
-                Setting.boneDisplay = (BoneDisplay)GUILayout.Toolbar((int)Setting.boneDisplay, boneDsiplayContents, UIParams.Instance.tStyle);
+                Setting.boneDisplay = (BoneDisplay)GUILayout.Toolbar((int)Setting.boneDisplay, boneDsiplayContents, UIParams.Instance.tbStyle);
                 if (GUILayout.Button(Text.Details)) {
                     Setting.mode = Mode.BoneDisplaySetting;
                 }
@@ -77,7 +77,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
                 GUILayout.Label(Text.CoordinateType, UIParams.Instance.lStyle);
                 GUILayout.FlexibleSpace();
-                Setting.coordinateType = (BoneGizmoRenderer.COORDINATE) GUILayout.Toolbar((int)Setting.coordinateType, coordinateTypeContents, UIParams.Instance.tStyle);
+                Setting.coordinateType = (BoneGizmoRenderer.COORDINATE) GUILayout.Toolbar((int)Setting.coordinateType, coordinateTypeContents, UIParams.Instance.tbStyle);
 
                 GUI.enabled = true;
             }
@@ -90,9 +90,9 @@ namespace CM3D2.PartsEdit.Plugin {
                 GUILayout.Label(Text.GizmoType, UIParams.Instance.lStyle);
                 GUILayout.FlexibleSpace();
                 if (Setting.coordinateType == BoneGizmoRenderer.COORDINATE.Local) {
-                    Setting.gizmoType = (GizmoType)GUILayout.Toolbar((int)Setting.gizmoType, gizmoTypeLocalContents, UIParams.Instance.tStyle);
+                    Setting.gizmoType = (GizmoType)GUILayout.Toolbar((int)Setting.gizmoType, gizmoTypeLocalContents, UIParams.Instance.tbStyle);
                 } else {
-                    Setting.gizmoType = (GizmoType)GUILayout.Toolbar((int)Setting.gizmoType, gizmoTypeContents, UIParams.Instance.tStyle);
+                    Setting.gizmoType = (GizmoType)GUILayout.Toolbar((int)Setting.gizmoType, gizmoTypeContents, UIParams.Instance.tbStyle);
                 }
                 if (GUILayout.Button(Text.Details)) {
                     Setting.mode = Mode.GizmoSetting;
