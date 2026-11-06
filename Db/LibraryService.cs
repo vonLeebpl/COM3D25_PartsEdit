@@ -31,7 +31,7 @@ namespace CM3D2.PartsEdit.Plugin.Db {
 
     // Laczy baze (Db) z logika gry: nakladanie wpisow na pokojowke, cofanie, zapis stanu slotu jako nowego wpisu.
     // Korzysta z istniejacej logiki (SetManager.Apply / Capture), wiec zachowuje sie tak samo jak dotychczasowy Import/Set
-    // (m.in. automatycznie wlacza Independent bones dla danych z kosciami *_ShoeAdj).
+    // (m.in. automatycznie wlacza Independent bones dla danych z kosciami *_Adj).
     internal static class LibraryService {
         static PartsEditDb Db { get { return PartsEditStore.Db; } }
 
@@ -216,7 +216,7 @@ namespace CM3D2.PartsEdit.Plugin.Db {
                 if (!obj) continue;
                 slots.Add(e.Slot);
                 bool deep = slotNo == (int)EXSlot.Base;
-                bool hasProxy = e.Bones.Any(b => b.Name != null && b.Name.EndsWith(ShoeProxy.Suffix));
+                bool hasProxy = e.Bones.Any(b => ProxyNames.IsEdit(b.Name));
                 foreach (BoneRecord b in e.Bones) {
                     if (ShoeProxy.SkipOnApply(b.Name, hasProxy)) continue;
                     Transform t = CMT.SearchObjName(obj.transform, b.Name, deep);

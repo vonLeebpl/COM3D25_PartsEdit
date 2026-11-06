@@ -153,7 +153,7 @@ namespace CM3D2.PartsEdit.Plugin.Db {
 
         static BoneRecord ReadBone(XElement t) {
             BoneRecord b = new BoneRecord();
-            b.Name = Text(t, "name");
+            b.Name = ProxyNames.Normalize(Text(t, "name")); // nazwy kosci-zastepnikow z wersji 0.2 -> nowe
             XElement pos = t.Element("position");
             if (pos != null) b.Position = new Vec3(Float(pos, "x", 0f), Float(pos, "y", 0f), Float(pos, "z", 0f));
             XElement rot = t.Element("rotation");

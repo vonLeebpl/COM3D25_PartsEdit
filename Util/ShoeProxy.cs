@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using CM3D2.PartsEdit.Plugin.Db;
 
 namespace CM3D2.PartsEdit.Plugin {
     // Niezalezna edycja kosci elementow ubrania (buty, rekawiczki, nakrycia glowy, skarpety itp.).
@@ -8,13 +9,13 @@ namespace CM3D2.PartsEdit.Plugin {
     // do kosci slotu (Bip01 ...), wiec reczna zmiana takiej kosci jest natychmiast nadpisywana.
     //
     // Rozwiazanie: dla kazdej kosci szkieletu (Bip01 ...) uzywanej przez siatke slotu tworzymy kosc-zastepnik
-    // (proxy, nazwa = oryginal + "_ShoeAdj"). Proxy startuje z ta sama macierza swiata co oryginal, wiec wyglad
+    // (proxy, nazwa = oryginal + "_Adj", dawniej "_ShoeAdj"). Proxy startuje z ta sama macierza swiata co oryginal, wiec wyglad
     // sie nie zmienia, a SkinnedMeshRenderer.bones dostaje proxy zamiast oryginalu. Gra nie dotyka proxy,
     // wiec zmiany zostaja, a proxy podaza za oryginalem, bo jest jego dzieckiem.
     //  - proxy bez przodka wsrod uzywanych kosci: dziecko prawdziwej kosci (poza identycznosciowa),
     //  - proxy z przodkiem wsrod uzywanych kosci (np. palec -> dlon): dziecko proxy przodka, a jego poza
     //    wzgledem przodka jest kopiowana z prawdziwych kosci co klatke (LocalPoseCopier).
-    // Sufiks "_ShoeAdj" zostaje ze wzgledu na zgodnosc z juz zapisanymi presetami i zestawami.
+    // Stare nazwy "_ShoeAdj" / "_ShoeFollow" z zapisanych danych sa zamieniane na nowe (ProxyNames.Normalize).
     internal class ShoeProxyMarker : MonoBehaviour {
         public SkinnedMeshRenderer[] renderers;
         public Transform[][] originalBones;
@@ -133,16 +134,16 @@ namespace CM3D2.PartsEdit.Plugin {
     }
 
     internal static class ShoeProxy {
-        public const string Suffix = "_ShoeAdj";
+        public const string Suffix = ProxyNames.Edit;
         // Wezel posredni, ktory tylko podaza za prawdziwa kosc (kopiuje poze); wezel edytowalny (Suffix) jest jego dzieckiem,
         // dzieki czemu LocalPoseCopier nie nadpisuje zmian uzytkownika.
-        public const string FollowSuffix = "_ShoeFollow";
+        public const string FollowSuffix = ProxyNames.Follow;
 
         // Kosc szkieletu, ktora gra nadpisuje co klatke (Bip01 ...), i ktora nie jest juz naszym proxy.
         public static bool IsProxyable(Transform t) {
             if (!t) return false;
             string n = t.name;
-            if (n.EndsWith(Suffix) || n.EndsWith(FollowSuffix)) return false;
+            if (ProxyNames.IsEdit(n) || ProxyNames.IsFollow(n)) return false;
             return n.StartsWith("Bip01");
         }
 
@@ -157,13 +158,13 @@ namespace CM3D2.PartsEdit.Plugin {
         }
 
         // Przy nakladaniu zapisanych danych pomijamy wpisy, ktorych nie wolno zapisywac na kosciach:
-        //  - wezly *_ShoeFollow (co klatke nadpisuje je LocalPoseCopier),
-        //  - prawdziwe kosci, gdy dane zawieraja korekty *_ShoeAdj: ich poza to chwilowy stan sterowany przez gre/animacje, a wpisanie
+        //  - wezly *_Follow (co klatke nadpisuje je LocalPoseCopier),
+        //  - prawdziwe kosci, gdy dane zawieraja korekty *_Adj: ich poza to chwilowy stan sterowany przez gre/animacje, a wpisanie
         //    go z powrotem zamraza kosci w pozie z chwili zapisu i po zmianie pozy postaci przedmiot "rozjezdza sie".
         public static bool SkipOnApply(string boneName, bool dataHasProxyBones) {
             if (boneName == null) return true;
-            if (boneName.EndsWith(FollowSuffix)) return true;
-            return dataHasProxyBones && !boneName.EndsWith(Suffix);
+            if (ProxyNames.IsFollow(boneName)) return true;
+            return dataHasProxyBones && !ProxyNames.IsEdit(boneName);
         }
 
         // Ustawia lokalna poze transformacji z macierzy (pozycja, obrot, skala). Przy macierzach prawie "czystych" (male korekty)
@@ -201,7 +202,7 @@ namespace CM3D2.PartsEdit.Plugin {
             foreach (SkinnedMeshRenderer smr in renderers) {
                 foreach (Transform b in smr.bones) {
                     if (!b) continue;
-                    if (b.name.EndsWith(Suffix) || b.name.EndsWith(FollowSuffix)) continue;
+                    if (ProxyNames.IsEdit(b.name) || ProxyNames.IsFollow(b.name)) continue;
                     if (hasSkeletonBones && !IsProxyable(b)) continue;
                     used.Add(b);
                 }
@@ -215,7 +216,7 @@ namespace CM3D2.PartsEdit.Plugin {
             if (!obj || IsActive(obj)) return;
             bool need = false;
             foreach (string n in names) {
-                if (n != null && n.EndsWith(Suffix)) { need = true; break; }
+                if (ProxyNames.IsEdit(n)) { need = true; break; }
             }
             if (!need || !CanApply(obj)) return;
             Enable(obj);

@@ -269,7 +269,8 @@ namespace CM3D2.PartsEdit.Plugin {
                 obj.transform.localScale = objectData.rootData.scale;
             }
             bool deep = slotNo == (int)EXSlot.Base;
-            bool hasProxyData = objectData.transformDataList.Any(t => t.name != null && t.name.EndsWith(ShoeProxy.Suffix));
+            foreach (ObjectData.TransformData t in objectData.transformDataList) t.name = Db.ProxyNames.Normalize(t.name); // stare nazwy _ShoeAdj
+            bool hasProxyData = objectData.transformDataList.Any(t => Db.ProxyNames.IsEdit(t.name));
             int skippedStale = 0;
             foreach (ObjectData.TransformData trsData in objectData.transformDataList) {
                 if (ShoeProxy.SkipOnApply(trsData.name, hasProxyData)) { skippedStale++; continue; }

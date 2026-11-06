@@ -75,7 +75,7 @@ namespace CM3D2.PartsEdit.Plugin {
         }
 
         void DrawShoeBones() {
-            // Po wlaczeniu kosci w siatce to *_ShoeAdj, wiec CanApply jest false - wiersz musi zostac, zeby mozna go wylaczyc.
+            // Po wlaczeniu kosci w siatce to *_Adj, wiec CanApply jest false - wiersz musi zostac, zeby mozna go wylaczyc.
             if (!ShoeProxy.IsActive(CommonUIData.obj) && !ShoeProxy.CanApply(CommonUIData.obj)) return;
             GUILayout.BeginHorizontal();
             {

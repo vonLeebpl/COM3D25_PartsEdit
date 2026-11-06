@@ -93,6 +93,8 @@ namespace CM3D2.PartsEdit.Plugin.Db {
                 if (e.OwnerGuid == null) e.OwnerGuid = "";
                 if (e.OwnerName == null) e.OwnerName = "";
                 if (e.Conditions == null) e.Conditions = new List<EntryCondition>();
+                // nazwy kosci-zastepnikow z wersji 0.2 (_ShoeAdj / _ShoeFollow) -> _Adj / _Follow (idempotentne)
+                foreach (BoneRecord b in e.Bones) b.Name = ProxyNames.Normalize(b.Name);
                 foreach (EntryCondition c in e.Conditions) {
                     if (c.Slot == null) c.Slot = "";
                     if (c.Pattern == null) c.Pattern = "";
