@@ -319,6 +319,7 @@ namespace CM3D2.PartsEdit.Plugin {
 
             GUI.enabled = captureSlotIndex >= 0 && !string.IsNullOrEmpty(captureName.Trim());
             if (GUILayout.Button("Save as modification (also assign to this maid)", UIParams.Instance.bStyle)) {
+                string baked = LibraryService.BakeRootIfIndependent(maid, slotIds[captureSlotIndex]);
                 bool hasChanges;
                 ModEntry entry = LibraryService.CaptureSlot(maid, slotIds[captureSlotIndex], captureName.Trim(), out hasChanges);
                 if (entry == null) {
@@ -329,7 +330,7 @@ namespace CM3D2.PartsEdit.Plugin {
                     Db.AddEntry(entry);
                     Binding(maid, true).EntryIds.Add(entry.Id);
                     Save();
-                    status = "Saved '" + entry.Name + "' [" + entry.Slot + "] (" + entry.Bones.Count + " bones).";
+                    status = (baked.Length > 0 ? "Object root pose converted into bone adjustments. " : "") + "Saved '" + entry.Name + "' [" + entry.Slot + "] (" + entry.Bones.Count + " bones).";
                 }
             }
             GUI.enabled = true;

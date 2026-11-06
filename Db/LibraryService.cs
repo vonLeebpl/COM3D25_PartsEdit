@@ -167,6 +167,19 @@ namespace CM3D2.PartsEdit.Plugin.Db {
             return "Object root pose converted into " + count + " bone adjustments (relative to the bones). Save the slot as a modification to keep it.";
         }
 
+        // Wolane przed zapisem slotu do biblioteki: jesli slot ma wlaczone Independent bones, a jego korzen zostal zmieniony
+        // (np. wpis z poza korzenia), zamienia te zmiane na korekty kosci (patrz BakeRootIntoBones). Dzieki temu zapisany wpis
+        // jest wzgledny wobec kosci i podaza za nimi w kazdej pozie. Zwraca komunikat albo pusty napis, gdy nic nie zrobiono.
+        public static string BakeRootIfIndependent(Maid maid, int slotNo) {
+            GameObject obj = SetManager.GetSlotObject(maid, slotNo);
+            if (!obj) return "";
+            ShoeProxyMarker marker = obj.GetComponent<ShoeProxyMarker>();
+            if (marker == null || marker.suspended) return "";
+            BackUpBoneData rb = BackUpData.GetOrNullMaidBoneData(maid, slotNo, obj, obj.transform);
+            if (rb == null || !(rb.changedPos || rb.changedRot || rb.changedScl)) return "";
+            return BakeRootIntoBones(maid, slotNo);
+        }
+
         // Cofa tylko poze korzenia obiektu (np. po wylaczeniu "Object root pose" we wpisie).
         public static void RevertRoot(Maid maid, ModEntry entry) {
             if (!maid) return;
