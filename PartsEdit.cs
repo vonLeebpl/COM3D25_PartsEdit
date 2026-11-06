@@ -19,7 +19,6 @@ namespace CM3D2.PartsEdit.Plugin
 
         ImportUI importUI = new ImportUI();
         ExportUI exportUI = new ExportUI();
-        SetUI setUI = new SetUI();
         LibraryUI libraryUI = new LibraryUI();
         CopyUI copyUI = new CopyUI();
         IKUI ikUI = new IKUI();
@@ -136,7 +135,6 @@ namespace CM3D2.PartsEdit.Plugin
             switch (Setting.mode)
             {
                 case Mode.Edit:
-                    if (GUILayout.Button("Library", UIParams.Instance.bStyle)) Setting.mode = Mode.Library;
                     settingUI.Draw();
 
                     GUILayout.Label("");
@@ -158,9 +156,6 @@ namespace CM3D2.PartsEdit.Plugin
                     break;
                 case Mode.Export:
                     exportUI.Draw();
-                    break;
-                case Mode.Set:
-                    setUI.Draw();
                     break;
                 case Mode.Library:
                     libraryUI.Draw();

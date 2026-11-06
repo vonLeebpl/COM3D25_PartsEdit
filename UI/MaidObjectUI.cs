@@ -112,20 +112,11 @@ namespace CM3D2.PartsEdit.Plugin {
             GUILayout.BeginHorizontal();
             {
                 GUILayout.Label(Text.Preset, UIParams.Instance.lStyle);
-                if (!CommonUIData.obj) {
-                    GUI.enabled = false;
+                // Import / Export / Set zastapilo okno Library (stare xml sa zaimportowane do bazy)
+                if (GUILayout.Button(Text.Library, UIParams.Instance.bStyle)) {
+                    Setting.mode = Mode.Library;
                 }
-                if(GUILayout.Button("Import", UIParams.Instance.bStyle)) {
-                    Setting.mode = Mode.Import;
-                }
-                if(GUILayout.Button("Export", UIParams.Instance.bStyle)) {
-                    Setting.mode = Mode.Export;
-                }
-                GUI.enabled = true;
                 GUI.enabled = CommonUIData.maid;
-                if (GUILayout.Button(Text.Set, UIParams.Instance.bStyle)) {
-                    Setting.mode = Mode.Set;
-                }
                 if (GUILayout.Button(Text.Copy, UIParams.Instance.bStyle)) {
                     Setting.mode = Mode.Copy;
                 }

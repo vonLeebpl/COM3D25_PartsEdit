@@ -28,8 +28,6 @@ namespace CM3D2.PartsEdit.Plugin {
         int healCount;
         // ustawiane w Disable(): Destroy(marker) jest odroczone do konca klatki, a kontrola przed renderowaniem nie moze wtedy "naprawiac" kosci
         public bool suspended;
-        bool started;
-        float nextInfo, maxPos, maxAng, loggedPos, loggedAng;
 
         float createdAt;
         bool seenBeforeRender, fallbackLogged;
@@ -70,13 +68,9 @@ namespace CM3D2.PartsEdit.Plugin {
             if (healed && healCount++ < 5) Log.Warn("independent bones: the game replaced smr.bones on '" + name + "' - proxies restored (" + healCount + ")");
 
             float now = Time.realtimeSinceStartup;
-            if (!started) {
-                started = true;
-                Log.Info("independent bones: before-render check active on '" + name + "' (" + nodes.Count + " nodes)");
-            }
+            if (now < nextReport) return;
 
             System.Text.StringBuilder sb = null;
-            string worstName = "";
             foreach (KeyValuePair<Transform, Transform> pair in nodes) {
                 Transform edit = pair.Key, real = pair.Value;
                 if (!edit || !real) continue;
@@ -85,22 +79,15 @@ namespace CM3D2.PartsEdit.Plugin {
                 Matrix4x4 actual = edit.localToWorldMatrix;
                 float pos = ((Vector3)actual.GetColumn(3) - (Vector3)expected.GetColumn(3)).magnitude;
                 float ang = Quaternion.Angle(edit.rotation, real.rotation * edit.localRotation);
-                if (pos > maxPos) { maxPos = pos; worstName = edit.name; }
-                if (ang > maxAng) { maxAng = ang; worstName = edit.name; }
                 if (pos > 0.01f || ang > 2f) {
                     if (sb == null) sb = new System.Text.StringBuilder();
                     sb.Append(" [").Append(edit.name).Append(": pos ").Append(pos.ToString("F3")).Append(" m, rot ").Append(ang.ToString("F1")).Append(" deg]");
                 }
             }
 
-            if (sb != null && now >= nextReport) {
+            if (sb != null) {
                 nextReport = now + 3f;
                 Log.Warn("independent bones drift on '" + name + "' (proxy vs real bone, assuming unedited ancestors):" + sb);
-            } else if (now >= nextInfo && (maxPos > loggedPos + 0.002f || maxAng > loggedAng + 0.5f)) {
-                // podsumowanie nawet gdy odchylenie jest ponizej progu - zeby brak wpisow "drift" cos znaczyl
-                nextInfo = now + 5f;
-                loggedPos = maxPos; loggedAng = maxAng;
-                Log.Info("independent bones: max proxy deviation so far " + maxPos.ToString("F4") + " m / " + maxAng.ToString("F2") + " deg" + (worstName.Length > 0 ? " (" + worstName + ")" : ""));
             }
         }
     }

@@ -19,6 +19,7 @@
         public static readonly string SelectSlot = Tr.T("スロット選択");
         public static readonly string Base = Tr.T("ベース");
         public static readonly string YureBone = Tr.T("揺れボーン");
+        public static readonly string Library = Tr.T("ライブラリ");
         public static readonly string ShoeBones = Tr.T("独立ボーン");
         public static readonly string SelectObject = Tr.T("オブジェクト選択");
         public static readonly string RefreshObjectList = Tr.T("オブジェクト一覧取得");

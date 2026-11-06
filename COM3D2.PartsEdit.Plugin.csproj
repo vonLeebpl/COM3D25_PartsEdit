@@ -144,7 +144,6 @@
     <Compile Include="UI\ObjectDataUI.cs" />
     <Compile Include="UI\ObjectEditUI.cs" />
     <Compile Include="UI\SettingUI.cs" />
-    <Compile Include="UI\SetUI.cs" />
     <Compile Include="UI\SkinnedMeshObjectEditUI.cs" />
     <Compile Include="UI\SkinnedMeshObjectSelectUI.cs" />
     <Compile Include="UI\TargetSelectModeUI.cs" />

@@ -131,7 +131,6 @@ namespace CM3D2.PartsEdit.Plugin {
         Export,
         BoneDisplaySetting,
         GizmoSetting,
-        Set,
         Copy,
         IK,
         IKLimit,
