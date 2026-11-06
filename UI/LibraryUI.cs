@@ -58,9 +58,9 @@ namespace CM3D2.PartsEdit.Plugin {
         }
 
         public void Draw() {
-            GUILayout.Label("Library", UIParams.Instance.lStyle);
+            GUILayout.Label(Text.Library, UIParams.Instance.lStyle);
             if (Db == null) {
-                GUILayout.Label("The library is not available (see the log).", UIParams.Instance.lStyle);
+                GUILayout.Label(TL.LibraryUnavailable, UIParams.Instance.lStyle);
                 DrawBack();
                 return;
             }
@@ -91,7 +91,7 @@ namespace CM3D2.PartsEdit.Plugin {
         }
 
         void DrawTabs() {
-            string[] names = new string[] { "Maid", "Library (" + Db.Entries.Count + ")", "Sets (" + Db.Sets.Count + ")" };
+            string[] names = new string[] { TL.TabMaid, string.Format(TL.TabLibraryFmt, Db.Entries.Count), string.Format(TL.TabSetsFmt, Db.Sets.Count) };
             int selected = GUILayout.Toolbar((int)tab, names, UIParams.Instance.bStyle);
             if (selected != (int)tab) {
                 tab = (Tab)selected;
@@ -137,7 +137,7 @@ namespace CM3D2.PartsEdit.Plugin {
         static string ResultText(List<ApplyResult> results) {
             int ok = results.Count(r => r.Status == ApplyStatus.Applied);
             StringBuilder sb = new StringBuilder();
-            sb.Append("Applied " + ok + "/" + results.Count + ".");
+            sb.Append(string.Format(TL.AppliedFmt, ok, results.Count));
             foreach (ApplyResult r in results.Where(r => r.Status != ApplyStatus.Applied)) sb.Append(" ").Append(r.ToString()).Append(";");
             return sb.ToString();
         }
@@ -172,25 +172,25 @@ namespace CM3D2.PartsEdit.Plugin {
 
         void DrawMaidTab(Maid maid) {
             if (!maid) {
-                GUILayout.Label("Select a maid first.", UIParams.Instance.lStyle);
+                GUILayout.Label(TL.SelectMaidFirst, UIParams.Instance.lStyle);
                 return;
             }
             MaidBinding b = Binding(maid, false);
 
             bool auto = b != null && b.AutoLoad;
-            bool autoNew = GUILayout.Toggle(auto, "Auto-load when this maid loads", UIParams.Instance.tStyle);
+            bool autoNew = GUILayout.Toggle(auto, TL.AutoLoad, UIParams.Instance.tStyle);
             if (autoNew != auto) {
                 Binding(maid, true).AutoLoad = autoNew;
                 Save();
             }
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Apply all", UIParams.Instance.bStyle)) {
+            if (GUILayout.Button(TL.ApplyAll, UIParams.Instance.bStyle)) {
                 status = ResultText(LibraryService.ApplyMaidProfile(maid));
             }
-            if (GUILayout.Button("Reset maid", UIParams.Instance.bStyle)) {
+            if (GUILayout.Button(TL.ResetMaid, UIParams.Instance.bStyle)) {
                 BackUpData.RestoreMaid(maid);
-                status = "Reset: all PartsEdit changes of this maid were reverted (also manual edits).";
+                status = TL.ResetDone;
             }
             GUILayout.EndHorizontal();
 
@@ -203,9 +203,9 @@ namespace CM3D2.PartsEdit.Plugin {
         }
 
         void DrawMaidSets(Maid maid, MaidBinding b) {
-            GUILayout.Label("Sets of this maid", UIParams.Instance.lStyle);
+            GUILayout.Label(TL.SetsOfMaid, UIParams.Instance.lStyle);
             UIUtil.BeginIndentArea();
-            if (b == null || b.SetIds.Count == 0) GUILayout.Label("(none)", UIParams.Instance.lStyle);
+            if (b == null || b.SetIds.Count == 0) GUILayout.Label(TL.None, UIParams.Instance.lStyle);
             if (b != null) {
                 Guid remove = Guid.Empty;
                 foreach (Guid setId in b.SetIds) {
@@ -214,8 +214,8 @@ namespace CM3D2.PartsEdit.Plugin {
                     GUILayout.BeginHorizontal();
                     GUILayout.Label(Short(set.Name, 28) + " (" + set.EntryIds.Count + ")", UIParams.Instance.lStyle);
                     GUILayout.FlexibleSpace();
-                    if (GUILayout.Button("Apply", UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(LibraryService.ApplyAll(maid, EntriesOf(set)));
-                    if (GUILayout.Button("Revert", UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, EntriesOf(set)); status = "Reverted set '" + set.Name + "'."; }
+                    if (GUILayout.Button(TL.Apply, UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(LibraryService.ApplyAll(maid, EntriesOf(set)));
+                    if (GUILayout.Button(TL.Revert, UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, EntriesOf(set)); status = string.Format(TL.RevertedSetFmt, set.Name); }
                     if (GUILayout.Button("x", UIParams.Instance.bStyle, GUILayout.Width(32))) remove = setId;
                     GUILayout.EndHorizontal();
                 }
@@ -223,19 +223,19 @@ namespace CM3D2.PartsEdit.Plugin {
                     ModSet removed;
                     b.SetIds.Remove(remove);
                     Save();
-                    if (Db.Sets.TryGetValue(remove, out removed)) { LibraryService.Revert(maid, EntriesOf(removed)); status = "Set '" + removed.Name + "' removed from this maid and reverted."; }
+                    if (Db.Sets.TryGetValue(remove, out removed)) { LibraryService.Revert(maid, EntriesOf(removed)); status = string.Format(TL.SetRemovedFmt, removed.Name); }
                 }
             }
-            addSetOpen = GUILayout.Toggle(addSetOpen, "+ Add set", UIParams.Instance.tStyle);
+            addSetOpen = GUILayout.Toggle(addSetOpen, TL.AddSet, UIParams.Instance.tStyle);
             if (addSetOpen) {
                 List<ModSet> choices = Db.Sets.Values.Where(s => b == null || !b.SetIds.Contains(s.Id)).OrderBy(s => s.Name).ToList();
-                if (choices.Count == 0) GUILayout.Label("(no other sets, create one in the Sets tab)", UIParams.Instance.lStyle);
+                if (choices.Count == 0) GUILayout.Label(TL.NoOtherSets, UIParams.Instance.lStyle);
                 foreach (ModSet s in choices.Take(PageSize)) {
                     if (GUILayout.Button(Short(s.Name, 40) + " (" + s.EntryIds.Count + ")", UIParams.Instance.bStyleL)) {
                         Binding(maid, true).SetIds.Add(s.Id);
                         addSetOpen = false;
                         Save();
-                        status = "Set '" + s.Name + "' added to this maid.";
+                        status = string.Format(TL.SetAddedFmt, s.Name);
                     }
                 }
             }
@@ -243,9 +243,9 @@ namespace CM3D2.PartsEdit.Plugin {
         }
 
         void DrawMaidEntries(Maid maid, MaidBinding b) {
-            GUILayout.Label("Modifications of this maid", UIParams.Instance.lStyle);
+            GUILayout.Label(TL.ModsOfMaid, UIParams.Instance.lStyle);
             UIUtil.BeginIndentArea();
-            if (b == null || b.EntryIds.Count == 0) GUILayout.Label("(none)", UIParams.Instance.lStyle);
+            if (b == null || b.EntryIds.Count == 0) GUILayout.Label(TL.None, UIParams.Instance.lStyle);
             if (b != null) {
                 Guid remove = Guid.Empty;
                 foreach (Guid entryId in b.EntryIds) {
@@ -254,9 +254,9 @@ namespace CM3D2.PartsEdit.Plugin {
                     GUILayout.BeginHorizontal();
                     GUILayout.Label(Short(e.Name, 24) + "  [" + e.Slot + "]", UIParams.Instance.lStyle);
                     GUILayout.FlexibleSpace();
-                    if (GUILayout.Button("Apply", UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
-                    if (GUILayout.Button("Revert", UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, new List<ModEntry> { e }); status = "Reverted '" + e.Name + "'."; }
-                    if (GUILayout.Button("Edit", UIParams.Instance.bStyle, GUILayout.Width(60))) StartEdit(maid, e);
+                    if (GUILayout.Button(TL.Apply, UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
+                    if (GUILayout.Button(TL.Revert, UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, new List<ModEntry> { e }); status = string.Format(TL.RevertedEntryFmt, e.Name); }
+                    if (GUILayout.Button(TL.Edit, UIParams.Instance.bStyle, GUILayout.Width(60))) StartEdit(maid, e);
                     if (GUILayout.Button("x", UIParams.Instance.bStyle, GUILayout.Width(32))) remove = entryId;
                     GUILayout.EndHorizontal();
                 }
@@ -264,14 +264,14 @@ namespace CM3D2.PartsEdit.Plugin {
                     ModEntry removed;
                     b.EntryIds.Remove(remove);
                     Save();
-                    if (Db.Entries.TryGetValue(remove, out removed)) { LibraryService.Revert(maid, new List<ModEntry> { removed }); status = "'" + removed.Name + "' removed from this maid and reverted."; }
+                    if (Db.Entries.TryGetValue(remove, out removed)) { LibraryService.Revert(maid, new List<ModEntry> { removed }); status = string.Format(TL.EntryRemovedFmt, removed.Name); }
                 }
             }
 
-            addEntryOpen = GUILayout.Toggle(addEntryOpen, "+ Add modification", UIParams.Instance.tStyle);
+            addEntryOpen = GUILayout.Toggle(addEntryOpen, TL.AddMod, UIParams.Instance.tStyle);
             if (addEntryOpen) {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Search", UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
+                GUILayout.Label(TL.Search, UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
                 string s2 = GUILayout.TextField(addEntrySearch, UIParams.Instance.textStyle);
                 if (s2 != addEntrySearch) { addEntrySearch = s2; addPage = 0; }
                 GUILayout.EndHorizontal();
@@ -282,7 +282,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 List<ModEntry> choices = FilterEntries(addEntrySearch)
                     .Where(e => equipped.Contains(e.Slot) && (b == null || !b.EntryIds.Contains(e.Id)))
                     .OrderBy(e => e.Name).ToList();
-                if (choices.Count == 0) GUILayout.Label("(no matching modifications for the worn items)", UIParams.Instance.lStyle);
+                if (choices.Count == 0) GUILayout.Label(TL.NoMatchingMods, UIParams.Instance.lStyle);
                 foreach (ModEntry e in Slice(choices, addPage)) {
                     if (GUILayout.Button(Short(e.Name, 34) + "  [" + e.Slot + "]", UIParams.Instance.bStyleL)) {
                         Binding(maid, true).EntryIds.Add(e.Id);
@@ -300,7 +300,7 @@ namespace CM3D2.PartsEdit.Plugin {
             string message = LibraryService.Edit(maid, e);
             if (string.IsNullOrEmpty(message)) {
                 editingId = e.Id;
-                status = "Editing '" + e.Name + "'. When done, open Library > Maid and use 'Update'.";
+                status = string.Format(TL.EditingFmt, e.Name);
             } else {
                 status = message;
             }
@@ -308,15 +308,15 @@ namespace CM3D2.PartsEdit.Plugin {
 
         // Zapis biezacego stanu slotu jako nowej modyfikacji (odpowiednik starego Export).
         void DrawCapture(Maid maid) {
-            GUILayout.Label("Save current slot as a modification", UIParams.Instance.lStyle);
+            GUILayout.Label(TL.SaveSlotHeader, UIParams.Instance.lStyle);
             UIUtil.BeginIndentArea();
 
             List<int> slotIds = SetManager.GetEquippedSlotIds(maid);
             slotIds.Insert(0, (int)EXSlot.Base);
             if (captureSlotIndex >= slotIds.Count) captureSlotIndex = -1;
 
-            string current = captureSlotIndex >= 0 ? SetManager.SlotLabel(maid, slotIds[captureSlotIndex]) : "(choose slot)";
-            slotPickerOpen = GUILayout.Toggle(slotPickerOpen, "Slot: " + current, UIParams.Instance.tStyle);
+            string current = captureSlotIndex >= 0 ? SetManager.SlotLabel(maid, slotIds[captureSlotIndex]) : TL.ChooseSlot;
+            slotPickerOpen = GUILayout.Toggle(slotPickerOpen, string.Format(TL.SlotFmt, current), UIParams.Instance.tStyle);
             if (slotPickerOpen) {
                 for (int i = 0; i < slotIds.Count; i++) {
                     if (GUILayout.Button(SetManager.SlotLabel(maid, slotIds[i]), UIParams.Instance.bStyleL)) {
@@ -328,54 +328,54 @@ namespace CM3D2.PartsEdit.Plugin {
             }
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Name", UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
+            GUILayout.Label(Text.Name, UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
             captureName = GUILayout.TextField(captureName, UIParams.Instance.textStyle);
             GUILayout.EndHorizontal();
 
             GUI.enabled = captureSlotIndex >= 0 && !string.IsNullOrEmpty(captureName.Trim());
-            if (GUILayout.Button("Save as modification (also assign to this maid)", UIParams.Instance.bStyle)) {
+            if (GUILayout.Button(TL.SaveAsMod, UIParams.Instance.bStyle)) {
                 string baked = LibraryService.BakeRootIfIndependent(maid, slotIds[captureSlotIndex]);
                 bool hasChanges;
                 ModEntry entry = LibraryService.CaptureSlot(maid, slotIds[captureSlotIndex], captureName.Trim(), out hasChanges);
                 if (entry == null) {
-                    status = "Nothing is equipped in this slot.";
+                    status = TL.NothingEquipped;
                 } else if (!hasChanges) {
-                    status = "Nothing to save: no bone of this slot was changed yet (edit it first, or apply a modification).";
+                    status = TL.NothingToSave;
                 } else {
                     Db.AddEntry(entry);
                     Binding(maid, true).EntryIds.Add(entry.Id);
                     Save();
-                    status = (baked.Length > 0 ? "Object root pose converted into bone adjustments. " : "") + "Saved '" + entry.Name + "' [" + entry.Slot + "] (" + entry.Bones.Count + " bones).";
+                    status = (baked.Length > 0 ? TL.RootConvertedPrefix : "") + string.Format(TL.SavedFmt, entry.Name, entry.Slot, entry.Bones.Count);
                 }
             }
             GUI.enabled = true;
 
             ModEntry editing;
             if (editingId != Guid.Empty && Db.Entries.TryGetValue(editingId, out editing)) {
-                if (GUILayout.Button("Update '" + Short(editing.Name, 24) + "' with the current state of its slot", UIParams.Instance.bStyle)) {
+                if (GUILayout.Button(string.Format(TL.UpdateBtnFmt, Short(editing.Name, 24)), UIParams.Instance.bStyle)) {
                     int editSlot = SetManager.FindSlotId(maid, editing.Slot);
                     if (editSlot == (int)EXSlot.None) {
-                        status = "The slot of '" + editing.Name + "' is not available on this maid.";
+                        status = string.Format(TL.SlotUnavailableFmt, editing.Name);
                     } else {
                         string bakedNote = LibraryService.BakeRootIfIndependent(maid, editSlot);
                         bool editChanged;
                         ModEntry fresh = LibraryService.CaptureSlot(maid, editSlot, editing.Name, out editChanged);
                         if (fresh == null || !editChanged) {
-                            status = "Nothing to update: no bone of this slot is changed.";
+                            status = TL.NothingToUpdate;
                         } else {
                             editing.Bones = fresh.Bones;
                             editing.Root = fresh.Root;
                             editing.MaidParts = fresh.MaidParts;
                             editing.Yure = fresh.Yure;
                             Save();
-                            status = (bakedNote.Length > 0 ? "Object root pose converted into bone adjustments. " : "") + "Updated '" + editing.Name + "' (" + editing.Bones.Count + " bones).";
+                            status = (bakedNote.Length > 0 ? TL.RootConvertedPrefix : "") + string.Format(TL.UpdatedFmt, editing.Name, editing.Bones.Count);
                         }
                     }
                 }
             }
 
             GUI.enabled = captureSlotIndex >= 0;
-            if (GUILayout.Button("Convert object root pose into bone adjustments", UIParams.Instance.bStyle)) {
+            if (GUILayout.Button(TL.ConvertBtn, UIParams.Instance.bStyle)) {
                 status = LibraryService.BakeRootIntoBones(maid, slotIds[captureSlotIndex]);
             }
             GUI.enabled = true;
@@ -386,20 +386,20 @@ namespace CM3D2.PartsEdit.Plugin {
 
         void DrawLibraryTab(Maid maid) {
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Search", UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
+            GUILayout.Label(TL.Search, UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
             string s2 = GUILayout.TextField(search, UIParams.Instance.textStyle);
             if (s2 != search) { search = s2; page = 0; }
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Sort", UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
-            string[] modes = new string[] { "Name", "Date", "Slot" };
+            GUILayout.Label(TL.Sort, UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
+            string[] modes = new string[] { Text.Name, TL.SortDate, TL.SortSlot };
             if (GUILayout.Button(modes[sortMode], UIParams.Instance.bStyle)) sortMode = (sortMode + 1) % modes.Length;
-            if (GUILayout.Button(ascending ? "Asc" : "Desc", UIParams.Instance.bStyle, GUILayout.Width(60))) ascending = !ascending;
+            if (GUILayout.Button(ascending ? TL.Asc : TL.Desc, UIParams.Instance.bStyle, GUILayout.Width(60))) ascending = !ascending;
             GUILayout.EndHorizontal();
 
             List<ModEntry> entries = Sorted(FilterEntries(search)).ToList();
-            if (entries.Count == 0) GUILayout.Label("(library is empty)", UIParams.Instance.lStyle);
+            if (entries.Count == 0) GUILayout.Label(TL.LibraryEmpty, UIParams.Instance.lStyle);
 
             Guid delete = Guid.Empty;
             foreach (ModEntry e in Slice(entries, page)) {
@@ -415,7 +415,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 } else {
                     GUILayout.Label(Short(e.Name, 26) + "  [" + e.Slot + "]", UIParams.Instance.lStyle);
                     GUILayout.FlexibleSpace();
-                    if (GUILayout.Button("Rename", UIParams.Instance.bStyle, GUILayout.Width(80))) {
+                    if (GUILayout.Button(TL.Rename, UIParams.Instance.bStyle, GUILayout.Width(80))) {
                         renameId = e.Id;
                         renameText = e.Name;
                     }
@@ -423,38 +423,38 @@ namespace CM3D2.PartsEdit.Plugin {
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
-                string matchLabel = e.Match == MatchMode.AnyInSlot ? "Any item in slot" : "Same item only";
+                string matchLabel = e.Match == MatchMode.AnyInSlot ? TL.MatchAny : TL.MatchSame;
                 if (GUILayout.Button(matchLabel, UIParams.Instance.bStyle)) {
                     e.Match = e.Match == MatchMode.AnyInSlot ? MatchMode.SameObjectName : MatchMode.AnyInSlot;
                     Save();
                 }
                 GUI.enabled = maid;
-                if (GUILayout.Button("Apply", UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
-                if (GUILayout.Button("Revert", UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, new List<ModEntry> { e }); status = "Reverted '" + e.Name + "'."; }
-                if (GUILayout.Button("Edit", UIParams.Instance.bStyle, GUILayout.Width(60))) StartEdit(maid, e);
+                if (GUILayout.Button(TL.Apply, UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
+                if (GUILayout.Button(TL.Revert, UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, new List<ModEntry> { e }); status = string.Format(TL.RevertedEntryFmt, e.Name); }
+                if (GUILayout.Button(TL.Edit, UIParams.Instance.bStyle, GUILayout.Width(60))) StartEdit(maid, e);
                 GUI.enabled = true;
-                string delLabel = confirmDelete == e.Id ? "Confirm?" : "Delete";
+                string delLabel = confirmDelete == e.Id ? TL.ConfirmQ : TL.Delete;
                 if (GUILayout.Button(delLabel, UIParams.Instance.bStyle, GUILayout.Width(80))) {
                     if (confirmDelete == e.Id) delete = e.Id; else confirmDelete = e.Id;
                 }
                 GUILayout.EndHorizontal();
-                if (e.Match == MatchMode.SameObjectName) GUILayout.Label("item: " + Short(e.ObjectName, 40), UIParams.Instance.lStyle);
+                if (e.Match == MatchMode.SameObjectName) GUILayout.Label(string.Format(TL.ItemFmt, Short(e.ObjectName, 40)), UIParams.Instance.lStyle);
 
                 // Poza korzenia obiektu (Maid Parts). Korzen obraca/przesuwa caly szkielet slotu jak sztywna bryle, wiec zapisany
                 // niezerowy obrot potrafi "rozjechac" przedmiot po zmianie pozy postaci - dlatego mozna to wylaczyc dla wpisu.
                 float rootRot = Quaternion.Angle(Quaternion.identity, DbConvert.ToQuaternion(e.Root.Rotation));
                 float rootMove = DbConvert.ToVector3(e.Root.Position).magnitude;
                 if (rootRot > 0.5f || rootMove > 0.002f) {
-                    string rootLabel = "Object root pose (rot " + rootRot.ToString("F1") + " deg, move " + (rootMove * 100f).ToString("F1") + " cm)";
+                    string rootLabel = string.Format(TL.RootPoseLabelFmt, rootRot.ToString("F1"), (rootMove * 100f).ToString("F1"));
                     bool rootOn = GUILayout.Toggle(e.MaidParts, rootLabel, UIParams.Instance.tStyle);
                     if (rootOn != e.MaidParts) {
                         e.MaidParts = rootOn;
                         Save();
                         if (!rootOn && maid) {
                             LibraryService.RevertRoot(maid, e);
-                            status = "Object root pose of '" + e.Name + "' switched off and reverted.";
+                            status = string.Format(TL.RootOffRevertedFmt, e.Name);
                         } else {
-                            status = "Object root pose of '" + e.Name + "' " + (rootOn ? "switched on (use Apply)." : "switched off.");
+                            status = string.Format(rootOn ? TL.RootOnFmt : TL.RootOffFmt, e.Name);
                         }
                     }
                 }
@@ -465,7 +465,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 Db.RemoveEntry(delete);
                 confirmDelete = Guid.Empty;
                 Save();
-                status = "Deleted '" + gone.Name + "'.";
+                status = string.Format(TL.DeletedFmt, gone.Name);
             }
             page = DrawPager(page, entries.Count);
         }
@@ -482,21 +482,21 @@ namespace CM3D2.PartsEdit.Plugin {
 
         void DrawSetsTab(Maid maid) {
             GUILayout.BeginHorizontal();
-            GUILayout.Label("New set", UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
+            GUILayout.Label(TL.NewSet, UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
             newSetName = GUILayout.TextField(newSetName, UIParams.Instance.textStyle);
             GUI.enabled = !string.IsNullOrEmpty(newSetName.Trim());
-            if (GUILayout.Button("Create", UIParams.Instance.bStyle, GUILayout.Width(80))) {
+            if (GUILayout.Button(TL.Create, UIParams.Instance.bStyle, GUILayout.Width(80))) {
                 ModSet created = Db.AddSet(newSetName.Trim());
                 openSetId = created.Id;
                 newSetName = "";
                 Save();
-                status = "Created set '" + created.Name + "'.";
+                status = string.Format(TL.CreatedSetFmt, created.Name);
             }
             GUI.enabled = true;
             GUILayout.EndHorizontal();
 
             List<ModSet> sets = Db.Sets.Values.OrderBy(s => s.Name).ToList();
-            if (sets.Count == 0) GUILayout.Label("(no sets yet)", UIParams.Instance.lStyle);
+            if (sets.Count == 0) GUILayout.Label(TL.NoSetsYet, UIParams.Instance.lStyle);
 
             Guid deleteSet = Guid.Empty;
             foreach (ModSet set in Slice(sets, setsPage)) {
@@ -528,7 +528,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 if (openSetId == deleteSet) openSetId = Guid.Empty;
                 confirmDeleteSet = Guid.Empty;
                 Save();
-                status = "Deleted set '" + name + "' (its modifications stay in the library).";
+                status = string.Format(TL.DeletedSetFmt, name);
             }
             setsPage = DrawPager(setsPage, sets.Count);
         }
@@ -536,7 +536,7 @@ namespace CM3D2.PartsEdit.Plugin {
         void DrawSetDetails(ModSet set, Maid maid, ref Guid deleteSet) {
             UIUtil.BeginIndentArea();
             List<ModEntry> members = EntriesOf(set);
-            if (members.Count == 0) GUILayout.Label("(empty)", UIParams.Instance.lStyle);
+            if (members.Count == 0) GUILayout.Label(TL.Empty, UIParams.Instance.lStyle);
 
             Guid remove = Guid.Empty;
             int move = 0; Guid moveId = Guid.Empty;
@@ -564,15 +564,15 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
             }
 
-            setAddOpen = GUILayout.Toggle(setAddOpen, "+ Add modification to set", UIParams.Instance.tStyle);
+            setAddOpen = GUILayout.Toggle(setAddOpen, TL.AddModToSet, UIParams.Instance.tStyle);
             if (setAddOpen) {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Search", UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
+                GUILayout.Label(TL.Search, UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
                 string s2 = GUILayout.TextField(setAddSearch, UIParams.Instance.textStyle);
                 if (s2 != setAddSearch) { setAddSearch = s2; setAddPage = 0; }
                 GUILayout.EndHorizontal();
                 List<ModEntry> choices = FilterEntries(setAddSearch).Where(e => !set.EntryIds.Contains(e.Id)).OrderBy(e => e.Name).ToList();
-                if (choices.Count == 0) GUILayout.Label("(nothing to add)", UIParams.Instance.lStyle);
+                if (choices.Count == 0) GUILayout.Label(TL.NothingToAdd, UIParams.Instance.lStyle);
                 foreach (ModEntry e in Slice(choices, setAddPage)) {
                     if (GUILayout.Button(Short(e.Name, 34) + "  [" + e.Slot + "]", UIParams.Instance.bStyleL)) {
                         Db.AddToSet(set.Id, e.Id);
@@ -584,27 +584,27 @@ namespace CM3D2.PartsEdit.Plugin {
 
             GUILayout.BeginHorizontal();
             GUI.enabled = maid && members.Count > 0;
-            if (GUILayout.Button("Apply to maid", UIParams.Instance.bStyle)) status = ResultText(LibraryService.ApplyAll(maid, members));
-            if (GUILayout.Button("Revert", UIParams.Instance.bStyle)) { LibraryService.Revert(maid, members); status = "Reverted set '" + set.Name + "'."; }
+            if (GUILayout.Button(TL.ApplyToMaid, UIParams.Instance.bStyle)) status = ResultText(LibraryService.ApplyAll(maid, members));
+            if (GUILayout.Button(TL.Revert, UIParams.Instance.bStyle)) { LibraryService.Revert(maid, members); status = string.Format(TL.RevertedSetFmt, set.Name); }
             GUI.enabled = maid;
             MaidBinding b = maid ? Binding(maid, false) : null;
             bool assigned = b != null && b.SetIds.Contains(set.Id);
-            if (GUILayout.Button(assigned ? "Unassign from maid" : "Assign to maid", UIParams.Instance.bStyle)) {
+            if (GUILayout.Button(assigned ? TL.UnassignFromMaid : TL.AssignToMaid, UIParams.Instance.bStyle)) {
                 MaidBinding mb = Binding(maid, true);
                 if (assigned) mb.SetIds.Remove(set.Id); else mb.SetIds.Add(set.Id);
                 Save();
                 if (assigned) LibraryService.Revert(maid, members);
-                status = assigned ? "Set unassigned and reverted." : "Set assigned to this maid.";
+                status = assigned ? TL.SetUnassigned : TL.SetAssigned;
             }
             GUI.enabled = true;
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Rename", UIParams.Instance.bStyle)) {
+            if (GUILayout.Button(TL.Rename, UIParams.Instance.bStyle)) {
                 setRenameId = set.Id;
                 setRenameText = set.Name;
             }
-            string delLabel = confirmDeleteSet == set.Id ? "Confirm delete?" : "Delete set";
+            string delLabel = confirmDeleteSet == set.Id ? TL.ConfirmDeleteQ : TL.DeleteSet;
             if (GUILayout.Button(delLabel, UIParams.Instance.bStyle)) {
                 if (confirmDeleteSet == set.Id) deleteSet = set.Id; else confirmDeleteSet = set.Id;
             }

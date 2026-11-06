@@ -133,3 +133,80 @@ IK保存	Save IK
 一括	Bulk
 靴ボーン独立	Independent shoe bones
 独立ボーン	Independent bones
+ライブラリを利用できません（ログを参照してください）。	The library is not available (see the log).
+メイド	Maid
+ライブラリ ({0})	Library ({0})
+セット ({0})	Sets ({0})
+このメイドの読み込み時に自動適用	Auto-load when this maid loads
+すべて適用	Apply all
+メイドをリセット	Reset maid
+リセット: このメイドのPartsEditによる変更をすべて元に戻しました（手動編集も含む）。	Reset: all PartsEdit changes of this maid were reverted (also manual edits).
+このメイドのセット	Sets of this maid
+（なし）	(none)
+適用	Apply
+元に戻す	Revert
+編集	Edit
+＋セットを追加	+ Add set
+（他のセットはありません。セットタブで作成してください）	(no other sets, create one in the Sets tab)
+このメイドの変更	Modifications of this maid
+＋変更を追加	+ Add modification
+検索	Search
+（装着中のアイテムに合う変更はありません）	(no matching modifications for the worn items)
+現在のスロットを変更として保存	Save current slot as a modification
+（スロットを選択）	(choose slot)
+スロット: {0}	Slot: {0}
+変更として保存（このメイドにも割り当て）	Save as modification (also assign to this maid)
+オブジェクトのルート姿勢をボーン調整に変換	Convert object root pose into bone adjustments
+このスロットには何も装着されていません。	Nothing is equipped in this slot.
+保存するものがありません: このスロットのボーンはまだ変更されていません（先に編集するか、変更を適用してください）。	Nothing to save: no bone of this slot was changed yet (edit it first, or apply a modification).
+更新するものがありません: このスロットのボーンは変更されていません。	Nothing to update: no bone of this slot is changed.
+オブジェクトのルート姿勢をボーン調整に変換しました。	Object root pose converted into bone adjustments.
+「{0}」[{1}] を保存しました（{2}ボーン）。	Saved '{0}' [{1}] ({2} bones).
+「{0}」を現在のスロットの状態で更新	Update '{0}' with the current state of its slot
+「{0}」のスロットはこのメイドにありません。	The slot of '{0}' is not available on this maid.
+「{0}」を更新しました（{1}ボーン）。	Updated '{0}' ({1} bones).
+「{0}」を編集中。終了したら ライブラリ > メイド の「更新」を使ってください。	Editing '{0}'. When done, open Library > Maid and use 'Update'.
+並べ替え	Sort
+日付	Date
+スロット	Slot
+昇順	Asc
+降順	Desc
+（ライブラリは空です）	(library is empty)
+スロット内のどのアイテムにも	Any item in slot
+同じアイテムのみ	Same item only
+確認？	Confirm?
+アイテム: {0}	item: {0}
+オブジェクトのルート姿勢（回転 {0}度、移動 {1}cm）	Object root pose (rot {0} deg, move {1} cm)
+「{0}」のルート姿勢をオフにして元に戻しました。	Object root pose of '{0}' switched off and reverted.
+「{0}」のルート姿勢をオンにしました（適用してください）。	Object root pose of '{0}' switched on (use Apply).
+「{0}」のルート姿勢をオフにしました。	Object root pose of '{0}' switched off.
+「{0}」を削除しました。	Deleted '{0}'.
+新規セット	New set
+作成	Create
+（セットはまだありません）	(no sets yet)
+（空）	(empty)
+＋セットに変更を追加	+ Add modification to set
+（追加できるものはありません）	(nothing to add)
+メイドに適用	Apply to maid
+メイドに割り当て	Assign to maid
+メイドから割り当て解除	Unassign from maid
+セットをこのメイドに割り当てました。	Set assigned to this maid.
+セットの割り当てを解除し、元に戻しました。	Set unassigned and reverted.
+削除を確認？	Confirm delete?
+セット「{0}」を作成しました。	Created set '{0}'.
+セット「{0}」を削除しました（含まれていた変更はライブラリに残ります）。	Deleted set '{0}' (its modifications stay in the library).
+セット「{0}」を元に戻しました。	Reverted set '{0}'.
+「{0}」を元に戻しました。	Reverted '{0}'.
+セット「{0}」をこのメイドから外し、元に戻しました。	Set '{0}' removed from this maid and reverted.
+「{0}」をこのメイドから外し、元に戻しました。	'{0}' removed from this maid and reverted.
+セット「{0}」をこのメイドに追加しました。	Set '{0}' added to this maid.
+適用しました: {0}/{1}。	Applied {0}/{1}.
+「{0}」[{1}]: {2}	'{0}' [{1}]: {2}
+適用済み	applied
+このメイドにそのスロットはありません	this maid has no such slot
+スロットが空です	slot is empty
+別のアイテムが装着されています（「同じアイテムのみ」の変更）	a different item is worn (modification is 'same item only')
+このスロットの「独立ボーン」を先にオンにしてください。	Enable 'Independent bones' for this slot first.
+このスロットのルート姿勢は変更されていません（変換するものがありません）。	The object root pose of this slot is not changed - nothing to convert.
+オブジェクトのルート姿勢を{0}個のボーン調整に変換しました（ボーン基準）。保存するにはスロットを変更として保存してください。	Object root pose converted into {0} bone adjustments (relative to the bones). Save the slot as a modification to keep it.
+ライブラリ	Library

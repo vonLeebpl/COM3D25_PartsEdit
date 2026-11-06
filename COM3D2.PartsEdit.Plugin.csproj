@@ -162,6 +162,7 @@
     <Compile Include="Db\PartsEditStore.cs" />
     <Compile Include="Db\LibraryService.cs" />
     <Compile Include="Util\Log.cs" />
+    <Compile Include="Util\TextLibrary.cs" />
     <Compile Include="Util\Tr.cs" />
     <Compile Include="Util\ShoeProxy.cs" />
     <Compile Include="Util\TransformUtil.cs" />

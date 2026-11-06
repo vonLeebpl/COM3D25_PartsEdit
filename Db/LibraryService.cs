@@ -16,7 +16,16 @@ namespace CM3D2.PartsEdit.Plugin.Db {
         public ApplyStatus Status;
 
         public override string ToString() {
-            return "'" + Entry.Name + "' [" + Entry.Slot + "]: " + Status;
+            return string.Format(TL.ResultLineFmt, Entry.Name, Entry.Slot, StatusText(Status));
+        }
+
+        static string StatusText(ApplyStatus status) {
+            switch (status) {
+                case ApplyStatus.Applied: return TL.StatusApplied;
+                case ApplyStatus.UnknownSlot: return TL.StatusUnknownSlot;
+                case ApplyStatus.SlotEmpty: return TL.StatusSlotEmpty;
+                default: return TL.StatusNameMismatch;
+            }
         }
     }
 
@@ -118,13 +127,13 @@ namespace CM3D2.PartsEdit.Plugin.Db {
         // Po zamianie wyglad w biezacej pozie jest taki sam, ale korekta jest wzgledem kosci i podaza za nimi w kazdej pozie.
         public static string BakeRootIntoBones(Maid maid, int slotNo) {
             GameObject obj = SetManager.GetSlotObject(maid, slotNo);
-            if (!obj) return "Nothing is equipped in this slot.";
+            if (!obj) return TL.NothingEquipped;
             ShoeProxyMarker marker = obj.GetComponent<ShoeProxyMarker>();
-            if (marker == null || marker.suspended) return "Enable 'Independent bones' for this slot first.";
+            if (marker == null || marker.suspended) return TL.EnableIndependent;
 
             Transform root = obj.transform;
             BackUpBoneData rb = BackUpData.GetOrNullMaidBoneData(maid, slotNo, obj, root);
-            if (rb == null || !(rb.changedPos || rb.changedRot || rb.changedScl)) return "The object root pose of this slot is not changed - nothing to convert.";
+            if (rb == null || !(rb.changedPos || rb.changedRot || rb.changedScl)) return TL.RootNotChanged;
 
             // wplyw zmiany korzenia jako przeksztalcenie w przestrzeni swiata
             Matrix4x4 parent = root.parent ? root.parent.localToWorldMatrix : Matrix4x4.identity;
@@ -164,7 +173,7 @@ namespace CM3D2.PartsEdit.Plugin.Db {
             BackUpData.Refresh();
             BoneEdit.requestRebuild = true;
             Log.Info("root pose of '" + obj.name + "' baked into " + count + " bone adjustments");
-            return "Object root pose converted into " + count + " bone adjustments (relative to the bones). Save the slot as a modification to keep it.";
+            return string.Format(TL.ConvertedFmt, count);
         }
 
         // Wolane przed zapisem slotu do biblioteki: jesli slot ma wlaczone Independent bones, a jego korzen zostal zmieniony
@@ -183,7 +192,7 @@ namespace CM3D2.PartsEdit.Plugin.Db {
         // Otwiera wpis do edycji: naklada go na pokojowke, wybiera jej slot na glownym ekranie (Maid Parts) i wraca do ekranu edycji.
         // Zwraca komunikat (pusty = wszystko w porzadku).
         public static string Edit(Maid maid, ModEntry entry) {
-            if (!maid) return "Select a maid first.";
+            if (!maid) return TL.SelectMaidFirst;
             ApplyResult result = Apply(maid, entry);
             if (result.Status != ApplyStatus.Applied) return result.ToString();
 

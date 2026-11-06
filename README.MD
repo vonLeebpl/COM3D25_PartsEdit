@@ -15,8 +15,9 @@ This is a port and extension of earlier PartsEdit work, see [Credits](#credits).
 - **Library** window (SKM-style): one database file with modifications (one slot each), sets, per-maid assignments and auto-load,
   revert / reset, per-modification "same item only" matching. The old Import / Export / Set screens still work on xml files.
 - Import / Export of presets, Sets (several slots in one file) with auto-load for a given maid, Copy between maids, IK.
-- English UI through the same translation file that `IMGUITranslationLoader` uses
-  (`IMGUITranslationLoader\IMGUIStrings\COM3D25_PartsEdit.txt`, named after the assembly).
+- Japanese UI (the source language, as in the original plugin) with an English translation file
+  (`IMGUITranslationLoader\IMGUIStrings\COM3D25_PartsEdit.txt`, named after the assembly). Without the file the UI is Japanese;
+  the button names used in the How-to below are the English ones.
 
 ## Requirements
 
