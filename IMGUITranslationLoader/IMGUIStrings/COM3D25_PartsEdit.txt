@@ -236,3 +236,4 @@ modelファイル	Model file
 現在の装着品に一致します	Matches what is worn now
 現在の装着品には一致しません	Does not match what is worn now
 （装着品と照合するにはメイドを選択してください）	(select a maid to check against the worn items)
+（オフ: スロット内のどのアイテムにも適用されます）	(off: fits any item in the slot)

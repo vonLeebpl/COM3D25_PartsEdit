@@ -97,6 +97,16 @@ namespace CM3D2.PartsEdit.Plugin.Db {
                     if (c.Slot == null) c.Slot = "";
                     if (c.Pattern == null) c.Pattern = "";
                 }
+                // Stary tryb "Same item only" (Match) to teraz zwykly warunek na nazwe obiektu. Gdy warunki byly juz wlaczone,
+                // Match byl ignorowany, wiec tylko go zerujemy. Operacja jest idempotentna.
+                if (e.Match == MatchMode.SameObjectName) {
+                    if (!e.UseConditions && !string.IsNullOrEmpty(e.ObjectName)) {
+                        e.UseConditions = true;
+                        e.RequireAll = true;
+                        e.Conditions.Add(new EntryCondition { Kind = ConditionKind.ObjectName, Pattern = e.ObjectName });
+                    }
+                    e.Match = MatchMode.AnyInSlot;
+                }
                 if (e.Root == null) e.Root = new BoneRecord();
                 if (e.Bones == null) e.Bones = new List<BoneRecord>();
             }

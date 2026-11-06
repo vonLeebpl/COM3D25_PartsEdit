@@ -92,8 +92,8 @@ Tabs
   `+ Add set` / `+ Add modification` (offer items made for her; tick *Also show ... other maids* to pick from the whole library;
   modifications are filtered to the items she currently wears), and **Save current slot as a modification**.
 - **Library** - search, sort (name / date / slot), rename, delete (asks to confirm), `Apply` / `Revert` / `Edit` on the selected maid,
-  and **Conditions**. Without conditions, *Any item in slot / Same item only* decides whether the modification fits every
-  item of that slot or only the item it was made for. `Object root pose (...)` appears when a modification contains a root change.
+  the **Use conditions** switch with a **Conditions** editor. Without conditions a modification fits any item worn in its slot.
+  `Object root pose (...)` appears when a modification contains a root change.
 - **Sets** - create sets, add / remove / reorder modifications, apply or assign a set to a maid, rename, delete a set
   (its modifications stay in the library).
 
@@ -112,7 +112,7 @@ files from earlier versions are imported once at the first start and left untouc
 ### Conditions: when does a modification apply
 
 Like in ShapeKeyMaster, a modification can have **conditions** (Library tab, **Conditions** button on the modification).
-Without conditions the simple *Any item in slot / Same item only* switch is used. With **Use conditions** on:
+Without conditions a modification fits **any item worn in its slot**. Switch **Use conditions** on (in the modification's row) and open **Conditions**:
 
 1. Choose **All must match** or **Any matches**.
 2. Add conditions (`+ Add condition`, or `+ Add from the worn item`). The kind button cycles through the kinds, **NOT** negates:

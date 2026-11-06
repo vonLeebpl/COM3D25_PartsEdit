@@ -239,8 +239,8 @@ namespace CM3D2.PartsEdit.Plugin {
                     GUILayout.BeginHorizontal();
                     GUILayout.Label(Short(set.Name, 28) + " (" + set.EntryIds.Count + ")", UIParams.Instance.lStyle);
                     GUILayout.FlexibleSpace();
-                    if (GUILayout.Button(TL.Apply, UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(LibraryService.ApplyAll(maid, EntriesOf(set)));
-                    if (GUILayout.Button(TL.Revert, UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, EntriesOf(set)); status = string.Format(TL.RevertedSetFmt, set.Name); }
+                    if (GUILayout.Button(TL.Apply, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) status = ResultText(LibraryService.ApplyAll(maid, EntriesOf(set)));
+                    if (GUILayout.Button(TL.Revert, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) { LibraryService.Revert(maid, EntriesOf(set)); status = string.Format(TL.RevertedSetFmt, set.Name); }
                     if (GUILayout.Button("x", UIParams.Instance.bStyle, GUILayout.Width(32))) remove = setId;
                     GUILayout.EndHorizontal();
                 }
@@ -280,9 +280,9 @@ namespace CM3D2.PartsEdit.Plugin {
                     GUILayout.BeginHorizontal();
                     GUILayout.Label(Short(e.Name, 24) + "  [" + e.Slot + "]", UIParams.Instance.lStyle);
                     GUILayout.FlexibleSpace();
-                    if (GUILayout.Button(TL.Apply, UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
-                    if (GUILayout.Button(TL.Revert, UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, new List<ModEntry> { e }); status = string.Format(TL.RevertedEntryFmt, e.Name); }
-                    if (GUILayout.Button(TL.Edit, UIParams.Instance.bStyle, GUILayout.Width(60))) StartEdit(maid, e);
+                    if (GUILayout.Button(TL.Apply, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
+                    if (GUILayout.Button(TL.Revert, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) { LibraryService.Revert(maid, new List<ModEntry> { e }); status = string.Format(TL.RevertedEntryFmt, e.Name); }
+                    if (GUILayout.Button(TL.Edit, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) StartEdit(maid, e);
                     if (GUILayout.Button("x", UIParams.Instance.bStyle, GUILayout.Width(32))) remove = entryId;
                     GUILayout.EndHorizontal();
                 }
@@ -341,8 +341,7 @@ namespace CM3D2.PartsEdit.Plugin {
         void DrawConditionsEditor(Maid maid, ModEntry e) {
             UIUtil.BeginIndentArea();
 
-            bool use = GUILayout.Toggle(e.UseConditions, TL.UseConditions, UIParams.Instance.tStyle);
-            if (use != e.UseConditions) { e.UseConditions = use; Save(); Resync(maid); }
+            if (!e.UseConditions) GUILayout.Label(TL.CondOffHint, UIParams.Instance.lStyleS);
 
             if (e.UseConditions) {
                 int mode = GUILayout.Toolbar(e.RequireAll ? 0 : 1, new string[] { TL.CondAll, TL.CondAny }, UIParams.Instance.tbStyle);
@@ -528,7 +527,7 @@ namespace CM3D2.PartsEdit.Plugin {
             GUILayout.Label(TL.Sort, UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
             string[] modes = new string[] { Text.Name, TL.SortDate, TL.SortSlot };
             if (GUILayout.Button(modes[sortMode], UIParams.Instance.bStyle)) sortMode = (sortMode + 1) % modes.Length;
-            if (GUILayout.Button(ascending ? TL.Asc : TL.Desc, UIParams.Instance.bStyle, GUILayout.Width(60))) ascending = !ascending;
+            if (GUILayout.Button(ascending ? TL.Asc : TL.Desc, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) ascending = !ascending;
             GUILayout.EndHorizontal();
 
             List<ModEntry> entries = Sorted(FilterEntries(search).Where(en => showAll || Mine(maid, en))).ToList();
@@ -540,7 +539,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 GUILayout.BeginHorizontal();
                 if (renameId == e.Id) {
                     renameText = GUILayout.TextField(renameText, UIParams.Instance.textStyle);
-                    if (GUILayout.Button("OK", UIParams.Instance.bStyle, GUILayout.Width(48)) && !string.IsNullOrEmpty(renameText.Trim())) {
+                    if (GUILayout.Button("OK", UIParams.Instance.bStyle, GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(renameText.Trim())) {
                         e.Name = renameText.Trim();
                         renameId = Guid.Empty;
                         Save();
@@ -548,40 +547,44 @@ namespace CM3D2.PartsEdit.Plugin {
                 } else {
                     GUILayout.Label(Short(e.Name, 26) + "  [" + e.Slot + "]", UIParams.Instance.lStyle);
                     GUILayout.FlexibleSpace();
-                    if (GUILayout.Button(TL.Rename, UIParams.Instance.bStyle, GUILayout.Width(80))) {
+                    if (GUILayout.Button(TL.Rename, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) {
                         renameId = e.Id;
                         renameText = e.Name;
                     }
                 }
                 GUILayout.EndHorizontal();
 
+                // wiersz 2 (jak w SKM): wlacznik warunkow + skrot + rozwijanie edytora. Bez warunkow wpis pasuje do kazdego przedmiotu w slocie.
                 GUILayout.BeginHorizontal();
-                if (e.UseConditions) {
-                    GUILayout.Label(e.RequireAll ? TL.CondActiveAll : TL.CondActiveAny, UIParams.Instance.lStyle);
-                } else {
-                    string matchLabel = e.Match == MatchMode.AnyInSlot ? TL.MatchAny : TL.MatchSame;
-                    if (GUILayout.Button(matchLabel, UIParams.Instance.bStyle)) {
-                        e.Match = e.Match == MatchMode.AnyInSlot ? MatchMode.SameObjectName : MatchMode.AnyInSlot;
-                        Save();
-                        Resync(maid);
-                    }
+                bool useCond = GUILayout.Toggle(e.UseConditions, TL.UseConditions, UIParams.Instance.tStyle);
+                if (useCond != e.UseConditions) {
+                    e.UseConditions = useCond;
+                    Save();
+                    Resync(maid);
+                    if (useCond) conditionsOpenId = e.Id;
                 }
-                if (GUILayout.Button(TL.CondButton, UIParams.Instance.bStyle, GUILayout.Width(90))) {
+                if (e.UseConditions) GUILayout.Label(e.RequireAll ? TL.CondActiveAll : TL.CondActiveAny, UIParams.Instance.lStyleS);
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button(TL.CondButton, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) {
                     conditionsOpenId = conditionsOpenId == e.Id ? Guid.Empty : e.Id;
                     conditionsFromWornOpen = false;
                 }
+                GUILayout.EndHorizontal();
+
+                // wiersz 3: akcje
+                GUILayout.BeginHorizontal();
                 GUI.enabled = maid;
-                if (GUILayout.Button(TL.Apply, UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
-                if (GUILayout.Button(TL.Revert, UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, new List<ModEntry> { e }); status = string.Format(TL.RevertedEntryFmt, e.Name); }
-                if (GUILayout.Button(TL.Edit, UIParams.Instance.bStyle, GUILayout.Width(60))) StartEdit(maid, e);
+                if (GUILayout.Button(TL.Apply, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
+                if (GUILayout.Button(TL.Revert, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) { LibraryService.Revert(maid, new List<ModEntry> { e }); status = string.Format(TL.RevertedEntryFmt, e.Name); }
+                if (GUILayout.Button(TL.Edit, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) StartEdit(maid, e);
                 GUI.enabled = true;
+                GUILayout.FlexibleSpace();
                 string delLabel = confirmDelete == e.Id ? TL.ConfirmQ : TL.Delete;
-                if (GUILayout.Button(delLabel, UIParams.Instance.bStyle, GUILayout.Width(80))) {
+                if (GUILayout.Button(delLabel, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) {
                     if (confirmDelete == e.Id) delete = e.Id; else confirmDelete = e.Id;
                 }
                 GUILayout.EndHorizontal();
                 if (conditionsOpenId == e.Id) DrawConditionsEditor(maid, e);
-                if (!e.UseConditions && e.Match == MatchMode.SameObjectName) GUILayout.Label(string.Format(TL.ItemFmt, Short(e.ObjectName, 40)), UIParams.Instance.lStyle);
                 if (showAll || !maid) GUILayout.Label(string.IsNullOrEmpty(e.OwnerName) ? TL.NoOwner : string.Format(TL.OwnerFmt, e.OwnerName), UIParams.Instance.lStyleS);
 
                 // Poza korzenia obiektu (Maid Parts). Korzen obraca/przesuwa caly szkielet slotu jak sztywna bryle, wiec zapisany
@@ -629,7 +632,7 @@ namespace CM3D2.PartsEdit.Plugin {
             GUILayout.Label(TL.NewSet, UIParams.Instance.lStyle, GUILayout.ExpandWidth(false));
             newSetName = GUILayout.TextField(newSetName, UIParams.Instance.textStyle);
             GUI.enabled = !string.IsNullOrEmpty(newSetName.Trim());
-            if (GUILayout.Button(TL.Create, UIParams.Instance.bStyle, GUILayout.Width(80))) {
+            if (GUILayout.Button(TL.Create, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) {
                 ModSet created = Db.AddSet(newSetName.Trim());
                 if (maid) { created.OwnerGuid = SetManager.MaidGuid(maid) ?? ""; created.OwnerName = LibraryService.MaidName(maid); }
                 openSetId = created.Id;
@@ -651,7 +654,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 GUILayout.BeginHorizontal();
                 if (setRenameId == set.Id) {
                     setRenameText = GUILayout.TextField(setRenameText, UIParams.Instance.textStyle);
-                    if (GUILayout.Button("OK", UIParams.Instance.bStyle, GUILayout.Width(48)) && !string.IsNullOrEmpty(setRenameText.Trim())) {
+                    if (GUILayout.Button("OK", UIParams.Instance.bStyle, GUILayout.ExpandWidth(false)) && !string.IsNullOrEmpty(setRenameText.Trim())) {
                         set.Name = setRenameText.Trim();
                         setRenameId = Guid.Empty;
                         Save();

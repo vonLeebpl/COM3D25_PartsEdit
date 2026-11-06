@@ -46,10 +46,7 @@ namespace CM3D2.PartsEdit.Plugin {
         public static readonly string Asc = Tr.T("昇順");
         public static readonly string Desc = Tr.T("降順");
         public static readonly string LibraryEmpty = Tr.T("（ライブラリは空です）");
-        public static readonly string MatchAny = Tr.T("スロット内のどのアイテムにも");
-        public static readonly string MatchSame = Tr.T("同じアイテムのみ");
         public static readonly string ConfirmQ = Tr.T("確認？");
-        public static readonly string ItemFmt = Tr.T("アイテム: {0}");
         public static readonly string RootPoseLabelFmt = Tr.T("オブジェクトのルート姿勢（回転 {0}度、移動 {1}cm）");
         public static readonly string RootOffRevertedFmt = Tr.T("「{0}」のルート姿勢をオフにして元に戻しました。");
         public static readonly string RootOnFmt = Tr.T("「{0}」のルート姿勢をオンにしました（適用してください）。");
@@ -69,6 +66,7 @@ namespace CM3D2.PartsEdit.Plugin {
         public static readonly string CondButton = Tr.T("条件");
         public static readonly string CondActiveAll = Tr.T("条件あり（すべて）");
         public static readonly string CondActiveAny = Tr.T("条件あり（いずれか）");
+        public static readonly string CondOffHint = Tr.T("（オフ: スロット内のどのアイテムにも適用されます）");
         public static readonly string UseConditions = Tr.T("条件を使う");
         public static readonly string CondAll = Tr.T("すべて満たす");
         public static readonly string CondAny = Tr.T("いずれか満たす");
