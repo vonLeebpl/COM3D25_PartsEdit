@@ -26,6 +26,9 @@ namespace CM3D2.PartsEdit.Plugin {
         string renameText = "";
         Guid confirmDelete = Guid.Empty;
 
+        // wpis otwarty przyciskiem Edit - mozna go potem zaktualizowac zamiast zapisywac nowy
+        Guid editingId = Guid.Empty;
+
         // zakladka Maid
         bool addEntryOpen = false;
         string addEntrySearch = "";
@@ -253,6 +256,7 @@ namespace CM3D2.PartsEdit.Plugin {
                     GUILayout.FlexibleSpace();
                     if (GUILayout.Button("Apply", UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
                     if (GUILayout.Button("Revert", UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, new List<ModEntry> { e }); status = "Reverted '" + e.Name + "'."; }
+                    if (GUILayout.Button("Edit", UIParams.Instance.bStyle, GUILayout.Width(60))) StartEdit(maid, e);
                     if (GUILayout.Button("x", UIParams.Instance.bStyle, GUILayout.Width(32))) remove = entryId;
                     GUILayout.EndHorizontal();
                 }
@@ -289,6 +293,17 @@ namespace CM3D2.PartsEdit.Plugin {
                 addPage = DrawPager(addPage, choices.Count);
             }
             UIUtil.EndoIndentArea();
+        }
+
+        // Przycisk Edit: naklada wpis, wybiera jego slot na glownym ekranie i wraca do edycji kosci.
+        void StartEdit(Maid maid, ModEntry e) {
+            string message = LibraryService.Edit(maid, e);
+            if (string.IsNullOrEmpty(message)) {
+                editingId = e.Id;
+                status = "Editing '" + e.Name + "'. When done, open Library > Maid and use 'Update'.";
+            } else {
+                status = message;
+            }
         }
 
         // Zapis biezacego stanu slotu jako nowej modyfikacji (odpowiednik starego Export).
@@ -334,6 +349,30 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
             }
             GUI.enabled = true;
+
+            ModEntry editing;
+            if (editingId != Guid.Empty && Db.Entries.TryGetValue(editingId, out editing)) {
+                if (GUILayout.Button("Update '" + Short(editing.Name, 24) + "' with the current state of its slot", UIParams.Instance.bStyle)) {
+                    int editSlot = SetManager.FindSlotId(maid, editing.Slot);
+                    if (editSlot == (int)EXSlot.None) {
+                        status = "The slot of '" + editing.Name + "' is not available on this maid.";
+                    } else {
+                        string bakedNote = LibraryService.BakeRootIfIndependent(maid, editSlot);
+                        bool editChanged;
+                        ModEntry fresh = LibraryService.CaptureSlot(maid, editSlot, editing.Name, out editChanged);
+                        if (fresh == null || !editChanged) {
+                            status = "Nothing to update: no bone of this slot is changed.";
+                        } else {
+                            editing.Bones = fresh.Bones;
+                            editing.Root = fresh.Root;
+                            editing.MaidParts = fresh.MaidParts;
+                            editing.Yure = fresh.Yure;
+                            Save();
+                            status = (bakedNote.Length > 0 ? "Object root pose converted into bone adjustments. " : "") + "Updated '" + editing.Name + "' (" + editing.Bones.Count + " bones).";
+                        }
+                    }
+                }
+            }
 
             GUI.enabled = captureSlotIndex >= 0;
             if (GUILayout.Button("Convert object root pose into bone adjustments", UIParams.Instance.bStyle)) {
@@ -392,6 +431,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 GUI.enabled = maid;
                 if (GUILayout.Button("Apply", UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
                 if (GUILayout.Button("Revert", UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, new List<ModEntry> { e }); status = "Reverted '" + e.Name + "'."; }
+                if (GUILayout.Button("Edit", UIParams.Instance.bStyle, GUILayout.Width(60))) StartEdit(maid, e);
                 GUI.enabled = true;
                 string delLabel = confirmDelete == e.Id ? "Confirm?" : "Delete";
                 if (GUILayout.Button(delLabel, UIParams.Instance.bStyle, GUILayout.Width(80))) {

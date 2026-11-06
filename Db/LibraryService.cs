@@ -180,6 +180,22 @@ namespace CM3D2.PartsEdit.Plugin.Db {
             return BakeRootIntoBones(maid, slotNo);
         }
 
+        // Otwiera wpis do edycji: naklada go na pokojowke, wybiera jej slot na glownym ekranie (Maid Parts) i wraca do ekranu edycji.
+        // Zwraca komunikat (pusty = wszystko w porzadku).
+        public static string Edit(Maid maid, ModEntry entry) {
+            if (!maid) return "Select a maid first.";
+            ApplyResult result = Apply(maid, entry);
+            if (result.Status != ApplyStatus.Applied) return result.ToString();
+
+            int slotNo = SetManager.FindSlotId(maid, entry.Slot);
+            Setting.targetSelectMode = 0;                // Maid Parts
+            CommonUIData.SetMaid(maid);
+            MaidSlotSelectUI.requestedSlot = slotNo;
+            BoneEdit.requestRebuild = true;
+            Setting.mode = Mode.Edit;
+            return "";
+        }
+
         // Cofa tylko poze korzenia obiektu (np. po wylaczeniu "Object root pose" we wpisie).
         public static void RevertRoot(Maid maid, ModEntry entry) {
             if (!maid) return;
