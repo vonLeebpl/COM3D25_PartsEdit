@@ -185,9 +185,9 @@ namespace CM3D2.PartsEdit.Plugin {
             if (GUILayout.Button("Apply all", UIParams.Instance.bStyle)) {
                 status = ResultText(LibraryService.ApplyMaidProfile(maid));
             }
-            if (GUILayout.Button("Revert maid", UIParams.Instance.bStyle)) {
+            if (GUILayout.Button("Reset maid", UIParams.Instance.bStyle)) {
                 BackUpData.RestoreMaid(maid);
-                status = "Reverted all changes of this maid.";
+                status = "Reset: all PartsEdit changes of this maid were reverted (also manual edits).";
             }
             GUILayout.EndHorizontal();
 
@@ -212,12 +212,15 @@ namespace CM3D2.PartsEdit.Plugin {
                     GUILayout.Label(Short(set.Name, 28) + " (" + set.EntryIds.Count + ")", UIParams.Instance.lStyle);
                     GUILayout.FlexibleSpace();
                     if (GUILayout.Button("Apply", UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(LibraryService.ApplyAll(maid, EntriesOf(set)));
+                    if (GUILayout.Button("Revert", UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, EntriesOf(set)); status = "Reverted set '" + set.Name + "'."; }
                     if (GUILayout.Button("x", UIParams.Instance.bStyle, GUILayout.Width(32))) remove = setId;
                     GUILayout.EndHorizontal();
                 }
                 if (remove != Guid.Empty) {
+                    ModSet removed;
                     b.SetIds.Remove(remove);
                     Save();
+                    if (Db.Sets.TryGetValue(remove, out removed)) { LibraryService.Revert(maid, EntriesOf(removed)); status = "Set '" + removed.Name + "' removed from this maid and reverted."; }
                 }
             }
             addSetOpen = GUILayout.Toggle(addSetOpen, "+ Add set", UIParams.Instance.tStyle);
@@ -249,12 +252,15 @@ namespace CM3D2.PartsEdit.Plugin {
                     GUILayout.Label(Short(e.Name, 24) + "  [" + e.Slot + "]", UIParams.Instance.lStyle);
                     GUILayout.FlexibleSpace();
                     if (GUILayout.Button("Apply", UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
+                    if (GUILayout.Button("Revert", UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, new List<ModEntry> { e }); status = "Reverted '" + e.Name + "'."; }
                     if (GUILayout.Button("x", UIParams.Instance.bStyle, GUILayout.Width(32))) remove = entryId;
                     GUILayout.EndHorizontal();
                 }
                 if (remove != Guid.Empty) {
+                    ModEntry removed;
                     b.EntryIds.Remove(remove);
                     Save();
+                    if (Db.Entries.TryGetValue(remove, out removed)) { LibraryService.Revert(maid, new List<ModEntry> { removed }); status = "'" + removed.Name + "' removed from this maid and reverted."; }
                 }
             }
 
@@ -313,9 +319,12 @@ namespace CM3D2.PartsEdit.Plugin {
 
             GUI.enabled = captureSlotIndex >= 0 && !string.IsNullOrEmpty(captureName.Trim());
             if (GUILayout.Button("Save as modification (also assign to this maid)", UIParams.Instance.bStyle)) {
-                ModEntry entry = LibraryService.CaptureSlot(maid, slotIds[captureSlotIndex], captureName.Trim());
+                bool hasChanges;
+                ModEntry entry = LibraryService.CaptureSlot(maid, slotIds[captureSlotIndex], captureName.Trim(), out hasChanges);
                 if (entry == null) {
                     status = "Nothing is equipped in this slot.";
+                } else if (!hasChanges) {
+                    status = "Nothing to save: no bone of this slot was changed yet (edit it first, or apply a modification).";
                 } else {
                     Db.AddEntry(entry);
                     Binding(maid, true).EntryIds.Add(entry.Id);
@@ -375,6 +384,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 }
                 GUI.enabled = maid;
                 if (GUILayout.Button("Apply", UIParams.Instance.bStyle, GUILayout.Width(70))) status = ResultText(new List<ApplyResult> { LibraryService.Apply(maid, e) });
+                if (GUILayout.Button("Revert", UIParams.Instance.bStyle, GUILayout.Width(70))) { LibraryService.Revert(maid, new List<ModEntry> { e }); status = "Reverted '" + e.Name + "'."; }
                 GUI.enabled = true;
                 string delLabel = confirmDelete == e.Id ? "Confirm?" : "Delete";
                 if (GUILayout.Button(delLabel, UIParams.Instance.bStyle, GUILayout.Width(80))) {
@@ -509,6 +519,7 @@ namespace CM3D2.PartsEdit.Plugin {
             GUILayout.BeginHorizontal();
             GUI.enabled = maid && members.Count > 0;
             if (GUILayout.Button("Apply to maid", UIParams.Instance.bStyle)) status = ResultText(LibraryService.ApplyAll(maid, members));
+            if (GUILayout.Button("Revert", UIParams.Instance.bStyle)) { LibraryService.Revert(maid, members); status = "Reverted set '" + set.Name + "'."; }
             GUI.enabled = maid;
             MaidBinding b = maid ? Binding(maid, false) : null;
             bool assigned = b != null && b.SetIds.Contains(set.Id);
@@ -516,7 +527,8 @@ namespace CM3D2.PartsEdit.Plugin {
                 MaidBinding mb = Binding(maid, true);
                 if (assigned) mb.SetIds.Remove(set.Id); else mb.SetIds.Add(set.Id);
                 Save();
-                status = assigned ? "Set unassigned." : "Set assigned to this maid.";
+                if (assigned) LibraryService.Revert(maid, members);
+                status = assigned ? "Set unassigned and reverted." : "Set assigned to this maid.";
             }
             GUI.enabled = true;
             GUILayout.EndHorizontal();

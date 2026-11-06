@@ -81,6 +81,16 @@ namespace CM3D2.PartsEdit.Plugin {
             return 0.06f;
         }
 
+        // Przy nakladaniu zapisanych danych pomijamy wpisy, ktorych nie wolno zapisywac na kosciach:
+        //  - wezly *_ShoeFollow (co klatke nadpisuje je LocalPoseCopier),
+        //  - prawdziwe kosci, gdy dane zawieraja korekty *_ShoeAdj: ich poza to chwilowy stan sterowany przez gre/animacje, a wpisanie
+        //    go z powrotem zamraza kosci w pozie z chwili zapisu i po zmianie pozy postaci przedmiot "rozjezdza sie".
+        public static bool SkipOnApply(string boneName, bool dataHasProxyBones) {
+            if (boneName == null) return true;
+            if (boneName.EndsWith(FollowSuffix)) return true;
+            return dataHasProxyBones && !boneName.EndsWith(Suffix);
+        }
+
         public static bool IsActive(GameObject obj) {
             return obj && obj.GetComponent<ShoeProxyMarker>() != null;
         }

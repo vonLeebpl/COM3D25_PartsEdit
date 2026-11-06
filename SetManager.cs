@@ -269,7 +269,10 @@ namespace CM3D2.PartsEdit.Plugin {
                 obj.transform.localScale = objectData.rootData.scale;
             }
             bool deep = slotNo == (int)EXSlot.Base;
+            bool hasProxyData = objectData.transformDataList.Any(t => t.name != null && t.name.EndsWith(ShoeProxy.Suffix));
+            int skippedStale = 0;
             foreach (ObjectData.TransformData trsData in objectData.transformDataList) {
+                if (ShoeProxy.SkipOnApply(trsData.name, hasProxyData)) { skippedStale++; continue; }
                 Transform bone = CMT.SearchObjName(obj.transform, trsData.name, deep);
                 if (!bone) continue;
                 BackUpBoneData boneData = BackUpData.GetOrAddMaidBoneData(maid, slotNo, obj, bone);
@@ -280,6 +283,7 @@ namespace CM3D2.PartsEdit.Plugin {
                 if (!boneData.changedScl) { boneData.scale = bone.localScale; boneData.changedScl = true; }
                 bone.localScale = trsData.scale;
             }
+            if (skippedStale > 0) Log.Info("Apply '" + obj.name + "': skipped " + skippedStale + " stale bone poses (follow nodes / real bones)");
         }
 
         static string autoloadPath {
