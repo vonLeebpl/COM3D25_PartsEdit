@@ -97,9 +97,18 @@ namespace CM3D2.PartsEdit.Plugin {
 
             GUILayout.FlexibleSpace();
             if (!string.IsNullOrEmpty(status)) GUILayout.Label(status, UIParams.Instance.lStyle);
+            DrawBack();
         }
 
         // ---------- wspolne ----------
+
+        // Back takze na dole ekranu (oprocz przycisku w naglowku)
+        void DrawBack() {
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(Text.Back, UIParams.Instance.bStyle)) Setting.mode = Mode.Edit;
+            GUILayout.EndHorizontal();
+        }
 
         void DrawTabs() {
             // liczniki na zakladkach uwzgledniaja filtr wlasciciela (tylko ta pokojowka / wszystkie), tak jak listy pod nimi
