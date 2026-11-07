@@ -230,16 +230,28 @@ internal class ComboBoxLO : ComboBoxBase {
         return selectedItemIndex;
     }
 
+    // Pozycja przycisku zapamietana podczas rysowania: GetLastRect w zdarzeniu myszy (klikniecie) nie daje poprawnej pozycji.
+    Rect drawnButtonRect;
+
     public int ShowScroll(GUILayoutOption buttonOpt) {
-        if (GUILayout.Button(buttonContent, buttonStyle, buttonOpt, GUILayout.MinWidth(90))) {
+        bool clicked = GUILayout.Button(buttonContent, buttonStyle, buttonOpt, GUILayout.MinWidth(90));
+        if (Event.current.type == EventType.Repaint) drawnButtonRect = GUILayoutUtility.GetLastRect();
+        if (clicked) {
             if (ComboPopup.IsOpen(this)) {
                 ComboPopup.Cancel();
             } else {
                 backSelectedItemIndex = selectedItemIndex;
-                Rect local = GUILayoutUtility.GetLastRect();
-                // Lista otwiera sie tuz pod przyciskiem, wyrownana do jego lewej krawedzi (a nie w miejscu klikniecia).
-                // GetLastRect jest we wspolrzednych okna, tak samo jak wczesniej mysz.
-                Vector2 relative = new Vector2(local.x, local.yMax);
+                Rect local = drawnButtonRect;
+                Vector2 relative;
+                if (local.width > 1f && local.height > 1f) {
+                    // Lista otwiera sie tuz pod przyciskiem, wyrownana do jego lewej krawedzi (a nie w miejscu klikniecia).
+                    relative = new Vector2(local.x, local.yMax);
+                } else {
+                    // awaryjnie (przycisk jeszcze nie narysowany): pod kursorem, jak dawniej
+                    Vector2 mouse = Event.current.mousePosition;
+                    local = new Rect(mouse.x - 45f, mouse.y - 9f, 90f, 18f);
+                    relative = new Vector2(local.x, local.yMax);
+                }
                 ComboPopup.Open(this, relative, new Vector2(Mathf.Max(local.width, 90f), Mathf.Max(local.height, 18f)));
             }
         }
