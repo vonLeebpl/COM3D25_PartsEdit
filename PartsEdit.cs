@@ -51,9 +51,26 @@ namespace CM3D2.PartsEdit.Plugin
             Harmony.CreateAndPatchAll(typeof(PartsEdit));
         }
 
+        float sizeCheckTime;
+
         void Update() {
             SetManager.TickAutoload();
             IKManager.BindObject();
+            SaveWindowSizeIfChanged();
+        }
+
+        // Rozmiar okna zmieniony przez uzytkownika trafia do cfg po puszczeniu myszy (a nie dopiero przy zamknieciu gry).
+        void SaveWindowSizeIfChanged() {
+            if (window == null || Time.unscaledTime < sizeCheckTime || Input.GetMouseButton(0)) return;
+            sizeCheckTime = Time.unscaledTime + 0.5f;
+            Rect rect = window.GetRect();
+            // oczekiwany rozmiar = ustawienie ograniczone do ekranu (tak jak przy otwieraniu okna)
+            float expectedW = Mathf.Min(Setting.windowWidth, Screen.width - 40f);
+            float expectedH = Mathf.Min(Setting.windowHeight, Screen.height - 40f);
+            if (Mathf.Abs(rect.width - expectedW) < 0.5f && Mathf.Abs(rect.height - expectedH) < 0.5f) return;
+            Setting.windowWidth = Mathf.Round(rect.width);
+            Setting.windowHeight = Mathf.Round(rect.height);
+            Setting.SaveIni();
         }
 
         void LateUpdate() {

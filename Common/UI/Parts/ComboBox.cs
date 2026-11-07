@@ -71,6 +71,21 @@ internal class ComboBoxBase {
         get { return listContent.Length; }
     }
 
+    // Wysokosc jednego wiersza listy (z czcionki stylu listy), ta sama dla rysowania i dla rozmiaru okienka.
+    public float RowHeight {
+        get { return Mathf.Max(itemHeight, 18f); }
+    }
+
+    // Szerokosc najdluzszej pozycji listy przy czcionce stylu listy.
+    public float PreferredListWidth() {
+        float max = 0f;
+        for (int i = 0; i < listContent.Length; i++) {
+            float w = listStyle.CalcSize(listContent[i]).x;
+            if (w > max) max = w;
+        }
+        return max;
+    }
+
     public int SelectedItemIndex {
         get { return selectedItemIndex; }
         set {
@@ -238,7 +253,7 @@ internal class ComboBoxLO : ComboBoxBase {
 
     public int DrawPopupList() {
         scrollPosition = GUILayout.BeginScrollView(scrollPosition);
-        float height = Mathf.Max(itemHeight, 18f) * listContent.Length;
+        float height = RowHeight * listContent.Length;
         int picked = GUILayout.SelectionGrid(selectedItemIndex, listContent, 1, listStyle, GUILayout.Height(height), GUILayout.ExpandWidth(true));
         GUILayout.EndScrollView();
         return picked;
@@ -269,8 +284,16 @@ internal static class ComboPopup {
     static void Place() {
         Vector2 abs = windowOffset + relativeToWindow;
         buttonScreen = new Rect(abs.x, abs.y, buttonSizeStored.x, buttonSizeStored.y);
-        float width = Mathf.Max(buttonSizeStored.x, 180f);
-        float height = Mathf.Min(280f, 22f * (current == null ? 1 : current.ItemCount) + 12f);
+        // Rozmiar okienka z zawartosci: szerokosc najdluzszej pozycji (+ pasek przewijania i marginesy), wysokosc z liczby
+        // wierszy; ograniczone do czesci ekranu, dalej przewijanie.
+        float width = Mathf.Max(buttonSizeStored.x, 120f);
+        float height = 40f;
+        if (current != null) {
+            width = Mathf.Max(width, current.PreferredListWidth() + 40f);
+            height = current.RowHeight * current.ItemCount + 16f;
+        }
+        width = Mathf.Min(width, Screen.width * 0.6f);
+        height = Mathf.Min(height, Screen.height * 0.6f);
         popupScreen = new Rect(abs.x, abs.y, width, height);
         if (popupScreen.xMax > Screen.width) popupScreen.x = Screen.width - popupScreen.width;
         if (popupScreen.y < 0f) popupScreen.y = 0f;
