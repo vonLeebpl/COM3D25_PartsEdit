@@ -291,11 +291,21 @@ internal class UIParams {
     public void AdjustButtonFont(float delta) {
         float scale = Mathf.Round((CM3D2.PartsEdit.Plugin.Setting.buttonFontScale + delta) * 20f) / 20f;
         CM3D2.PartsEdit.Plugin.Setting.buttonFontScale = Mathf.Clamp(scale, 0.6f, 1.3f);
+        ApplyFontScales();
+        CM3D2.PartsEdit.Plugin.Setting.SaveIni();
+    }
+
+    // Przelicza czcionki etykiet i przyciskow po zmianie mnoznikow (A- / A+ albo okno F1).
+    public void ApplyFontScales() {
+        lStyle.fontSize = LabelFontPx(fontSize);
+        lStyleC.fontSize = LabelFontPx(fontSize);
+        lStyleB.fontSize = LabelFontPx(fontSize);
+        lStyleS.fontSize = LabelFontPx(fontSizeS);
+        lStyleRS.fontSize = LabelFontPx(fontSizeS);
         bStyle.fontSize = ButtonFontPx();
         bStyleL.fontSize = ButtonFontPx();
         tbStyle.fontSize = ButtonFontPx();
         tbStyleL.fontSize = ButtonFontPx();
-        CM3D2.PartsEdit.Plugin.Setting.SaveIni();
     }
 
     // Tla obszarow: dwa odcienie szarosci z cienka ramka, zeby sekcje i wiersze list byly wyraznie rozdzielone.

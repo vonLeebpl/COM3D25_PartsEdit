@@ -252,11 +252,18 @@ check the Library tab: a modification with an *object root pose* that is switche
 - **Colours** - the highlight colour (selected buttons, selected list items) is a neutral grey by default. Change it in
   Bone Display > `Detailed` (*Selection highlight colour*). The colours of the drawn bones are there too.
 - **Button font size** - `A-` / `A+` in the Library header (steps of 0.05, range 0.6 - 1.3, default 0.80).
-- **Label font size** - the static texts (labels) are scaled by `[Window] LabelFontScale` in the settings file (default 0.85, range 0.5 - 1.5); edit it while the game is closed.
 - **Window size** - drag the edges; it is saved when the game closes.
-- The settings file is `BepInEx\config\PartsEdit\COM3D2.PartsEdit.Plugin.ini` (the name comes from the original plugin and is
-  kept so your settings carry over). Relevant keys: `[Window] Width`, `Height`, `ButtonFontScale`, `LabelFontScale` and `[BoneDisplay] HighlightColor`.
-  An old red highlight colour (`#B80000`) from 0.2 is replaced by the new grey default.
+- **Settings file** - all settings are in the BepInEx config file `BepInEx\config\com3d25.partsedit.cfg` and can be
+  changed in game in the BepInEx Configuration Manager (**F1**, plugin "COM3D25_PartsEdit"); window size and font sizes apply at once.
+  The values are saved when you change them in the plugin and when the game closes. Keys:
+  - `[Window] Width`, `Height` - size of the window in pixels;
+  - `[Window] LabelFontScale` - font size of the static texts (labels), default 0.85, range 0.5 - 1.5;
+  - `[Window] ButtonFontScale` - font size of the buttons, default 0.80 (also `A-` / `A+` in the Library header);
+  - `[BoneDisplay]` `BoneSelectKey`, `NormalBoneColor`, `SelectBoneColor`, `HighlightColor`, `IKChainColor`, `BodyBoneDisplay`;
+  - `[Setting]` `BoneDisplay`, `CoordinateType`, `GizmoType`; `[Gravity]` `On`, `Strength`; `[Hotkeys]` gizmo and IK keys.
+  Colours are hex values (`#RRGGBB`). The old `COM3D2.PartsEdit.Plugin.ini` of version 0.3 and earlier is read **once**, when the
+  cfg file does not exist yet, and its values are copied to the cfg; afterwards the ini is no longer used or written.
+  An old red highlight colour (`#B80000`) is replaced by the grey default.
 - **Language** - the UI follows the translation file; remove or rename `COM3D25_PartsEdit.txt` to see the Japanese source texts.
 
 ## Where the data is and how to back it up
@@ -268,7 +275,8 @@ Everything lives in `BepInEx\config\PartsEdit\`:
 | `PartsEdit.db.json` | the Library: modifications, sets, maid assignments, conditions (human-readable JSON) |
 | `PartsEdit.db.json.bak` | the previous version of the database (kept on every save) |
 | `PartsEdit.db.json.corrupt-<time>` | an unreadable database moved aside; the plugin then starts with an empty one |
-| `COM3D2.PartsEdit.Plugin.ini` | settings |
+| `..\com3d25.partsedit.cfg` (one level up, in `BepInEx\config`) | settings (BepInEx config, F1 window) |
+| `COM3D2.PartsEdit.Plugin.ini` | old settings of 0.3 and earlier (read once for migration, not written any more) |
 | `Presets\` | old preset / set xml files from 0.2 (imported once, not used afterwards) and `Presets\IK\` for IK data |
 
 To back up, copy the folder. To start over, close the game and delete `PartsEdit.db.json` (the old xml files are imported again).

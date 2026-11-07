@@ -40,7 +40,7 @@ namespace CM3D2.PartsEdit.Plugin {
         public static float windowHeight = 850f;
         // mnoznik rozmiaru czcionki przyciskow wzgledem czcionki interfejsu (ustawiany przyciskami A- / A+ w oknie Library)
         public static float buttonFontScale = 0.80f;
-        // mnoznik rozmiaru czcionki statycznych tekstow (etykiet) wzgledem czcionki interfejsu; ustawienie [Window] LabelFontScale w pliku ini
+        // mnoznik rozmiaru czcionki statycznych tekstow (etykiet) wzgledem czcionki interfejsu; [Window] LabelFontScale w pliku cfg (F1)
         public static float labelFontScale = 0.85f;
 
         public static SettingValue<BodyBoneDisplay> bodyBoneDisplay = new SettingValue<BodyBoneDisplay>(BodyBoneDisplay.Visible);
@@ -111,6 +111,11 @@ namespace CM3D2.PartsEdit.Plugin {
         }
 
         public static void SaveIni() {
+            // pod BepInEx ustawienia zapisuje plik cfg (okno F1); ini zostaje tylko jako zrodlo starych wartosci i dla UnityInjector
+            if (ConfigBridge.Ready) {
+                ConfigBridge.Push();
+                return;
+            }
             SaveSetting();
             SaveBoneDisplay();
             SaveGizmoDisplay();

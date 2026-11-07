@@ -39,6 +39,8 @@ namespace CM3D2.PartsEdit.Plugin
             window = gameObject.AddComponent<GearWindowSystem>().GetUIWindow();
             window.SetWindowInfo("PartsEdit", PluginInfo.Version);
             window.SetSize(new Vector2(Mathf.Min(Setting.windowWidth, Screen.width - 40f), Mathf.Min(Setting.windowHeight, Screen.height - 40f)));
+            ConfigBridge.WindowSizeChanged += OnConfigWindowSize;
+            ConfigBridge.FontScaleChanged += OnConfigFontScale;
 
             window.AddDrawEvent(Draw);
 
@@ -58,7 +60,19 @@ namespace CM3D2.PartsEdit.Plugin
             IKManager.RefreshHandles();
         }
 
+        // zmiana rozmiaru okna albo czcionek w oknie F1 (Configuration Manager) dziala od razu
+        void OnConfigWindowSize() {
+            if (window == null) return;
+            window.SetSize(new Vector2(Mathf.Min(Setting.windowWidth, Screen.width - 40f), Mathf.Min(Setting.windowHeight, Screen.height - 40f)));
+        }
+
+        void OnConfigFontScale() {
+            UIParams.Instance.ApplyFontScales();
+        }
+
         void OnDestroy() {
+            ConfigBridge.WindowSizeChanged -= OnConfigWindowSize;
+            ConfigBridge.FontScaleChanged -= OnConfigFontScale;
             if (window == null) return;
             Rect rect = window.GetRect();
             Setting.windowWidth = rect.width;

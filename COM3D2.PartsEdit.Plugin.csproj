@@ -115,6 +115,7 @@
     <Compile Include="Data\ObjectData.cs" />
     <Compile Include="Data\PartsEditSet.cs" />
     <Compile Include="Data\PresetFileData.cs" />
+    <Compile Include="Data\ConfigBridge.cs" />
     <Compile Include="Data\Setting.cs" />
     <Compile Include="Library\Helper.cs" />
     <Compile Include="MaidObserver.cs" />

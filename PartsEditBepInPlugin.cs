@@ -18,8 +18,11 @@ namespace CM3D2.PartsEdit.Plugin {
             Directory.CreateDirectory(Path.Combine(configDir, "Presets"));
             Directory.CreateDirectory(Path.Combine(Path.Combine(configDir, "Presets"), "IK"));
             PresetManager.directoryPath = Path.Combine(configDir, "Presets") + Path.DirectorySeparatorChar;
-            IniUtil.InitFile(Path.Combine(configDir, "COM3D2.PartsEdit.Plugin.ini"));
+            // Ustawienia: plik cfg BepInEx (okno F1). Dawne ini jest tylko czytane, zeby przy pierwszym uruchomieniu przeniesc wartosci.
+            string legacyIni = Path.Combine(configDir, "COM3D2.PartsEdit.Plugin.ini");
+            IniUtil.InitFileReadOnly(legacyIni);
             Setting.LoadIni();
+            ConfigBridge.Init(Config, legacyIni);
             Setting.SaveIni();
             Db.PartsEditStore.Init(configDir, PresetManager.directoryPath);
 
