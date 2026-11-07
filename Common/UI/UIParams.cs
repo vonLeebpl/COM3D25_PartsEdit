@@ -302,6 +302,10 @@ internal class UIParams {
         lStyleB.fontSize = LabelFontPx(fontSize);
         lStyleS.fontSize = LabelFontPx(fontSizeS);
         lStyleRS.fontSize = LabelFontPx(fontSizeS);
+        // przelaczniki (np. Auto-load) to tez statyczne etykiety
+        tStyle.fontSize = LabelFontPx(fontSize);
+        tStyleS.fontSize = LabelFontPx(fontSizeS);
+        tStyleSS.fontSize = LabelFontPx(fontSizeSS);
         bStyle.fontSize = ButtonFontPx();
         bStyleL.fontSize = ButtonFontPx();
         tbStyle.fontSize = ButtonFontPx();
@@ -391,9 +395,9 @@ internal class UIParams {
         bStyleL.fontSize = ButtonFontPx();
         tbStyle.fontSize = ButtonFontPx();
         tbStyleL.fontSize = ButtonFontPx();
-        tStyle.fontSize = fontSize;
-        tStyleS.fontSize = fontSizeS;
-        tStyleSS.fontSize = fontSizeSS;
+        tStyle.fontSize = LabelFontPx(fontSize);
+        tStyleS.fontSize = LabelFontPx(fontSizeS);
+        tStyleSS.fontSize = LabelFontPx(fontSizeSS);
         tStyleL.fontSize = fontSizeL;
         listStyle.fontSize = fontSizeS;
         textStyle.fontSize = fontSize;
