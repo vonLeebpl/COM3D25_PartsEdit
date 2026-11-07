@@ -68,7 +68,8 @@ E_ｴﾛ椅子4-7吊	E_Erotic Chair 4-7 Suspension
 オブジェクト一覧取得	Get object list
 オブジェクト選択	object selection
 オブジェクト一覧再取得	Re-obtain object list
-読み込み中のメイドから、別のメイドへカテゴリ編集をコピーします。	Copy category edits from the loaded maid to another maid.
+別のメイドから、選択中のメイドへカテゴリ編集をコピーします。	Copy category edits from another maid to the selected maid.
+コピー先のメイドが選択されていません。	No destination maid is selected.
 揺れ状態もコピー	Also copy sway (yure) state
 オブジェクト名が違う場合はスキップ	Skip if object names differ
 コピー元メイドを選択してください。	Please select the source maid.

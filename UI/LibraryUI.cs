@@ -73,13 +73,14 @@ namespace CM3D2.PartsEdit.Plugin {
             GUILayout.BeginHorizontal();
             GUILayout.Label(Text.Library, UIParams.Instance.lStyle);
             GUILayout.FlexibleSpace();
+            // Back na gorze (przy dlugich listach nie trzeba przewijac na sam dol); obok rozmiar czcionki przyciskow
+            if (GUILayout.Button(Text.Back, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) Setting.mode = Mode.Edit;
             // rozmiar czcionki przyciskow (zapisywany w ustawieniach)
             if (GUILayout.Button("A-", UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) UIParams.Instance.AdjustButtonFont(-0.05f);
             if (GUILayout.Button("A+", UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) UIParams.Instance.AdjustButtonFont(0.05f);
             GUILayout.EndHorizontal();
             if (Db == null) {
                 GUILayout.Label(TL.LibraryUnavailable, UIParams.Instance.lStyle);
-                DrawBack();
                 return;
             }
 
@@ -96,17 +97,9 @@ namespace CM3D2.PartsEdit.Plugin {
 
             GUILayout.FlexibleSpace();
             if (!string.IsNullOrEmpty(status)) GUILayout.Label(status, UIParams.Instance.lStyle);
-            DrawBack();
         }
 
         // ---------- wspolne ----------
-
-        void DrawBack() {
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button(Text.Back, UIParams.Instance.bStyle)) Setting.mode = Mode.Edit;
-            GUILayout.EndHorizontal();
-        }
 
         void DrawTabs() {
             // liczniki na zakladkach uwzgledniaja filtr wlasciciela (tylko ta pokojowka / wszystkie), tak jak listy pod nimi

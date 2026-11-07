@@ -237,9 +237,9 @@ internal class ComboBoxLO : ComboBoxBase {
             } else {
                 backSelectedItemIndex = selectedItemIndex;
                 Rect local = GUILayoutUtility.GetLastRect();
-                Vector2 mouse = Event.current.mousePosition;
-                // GUI.Window gives a window-local mouse. That offset is the button.
-                Vector2 relative = new Vector2(mouse.x - local.width * 0.5f, mouse.y - local.height * 0.5f);
+                // Lista otwiera sie tuz pod przyciskiem, wyrownana do jego lewej krawedzi (a nie w miejscu klikniecia).
+                // GetLastRect jest we wspolrzednych okna, tak samo jak wczesniej mysz.
+                Vector2 relative = new Vector2(local.x, local.yMax);
                 ComboPopup.Open(this, relative, new Vector2(Mathf.Max(local.width, 90f), Mathf.Max(local.height, 18f)));
             }
         }
@@ -283,7 +283,8 @@ internal static class ComboPopup {
 
     static void Place() {
         Vector2 abs = windowOffset + relativeToWindow;
-        buttonScreen = new Rect(abs.x, abs.y, buttonSizeStored.x, buttonSizeStored.y);
+        // relativeToWindow to lewy dolny rog przycisku, lista zaczyna sie pod nim
+        buttonScreen = new Rect(abs.x, abs.y - buttonSizeStored.y, buttonSizeStored.x, buttonSizeStored.y);
         // Rozmiar okienka z zawartosci: szerokosc najdluzszej pozycji (+ pasek przewijania i marginesy), wysokosc z liczby
         // wierszy; ograniczone do czesci ekranu, dalej przewijanie.
         float width = Mathf.Max(buttonSizeStored.x, 120f);
@@ -296,6 +297,8 @@ internal static class ComboPopup {
         height = Mathf.Min(height, Screen.height * 0.6f);
         popupScreen = new Rect(abs.x, abs.y, width, height);
         if (popupScreen.xMax > Screen.width) popupScreen.x = Screen.width - popupScreen.width;
+        // brak miejsca pod przyciskiem: lista otwiera sie nad nim
+        if (popupScreen.yMax > Screen.height) popupScreen.y = abs.y - buttonSizeStored.y - popupScreen.height;
         if (popupScreen.y < 0f) popupScreen.y = 0f;
     }
 
@@ -317,14 +320,25 @@ internal static class ComboPopup {
 
     static GUIStyle popupStyle;
     static GUIStyle PopupStyle() {
-        if (popupStyle != null) return popupStyle;
+        // tekstura tla moze zostac zniszczona przez gre (zmiana sceny / UnloadUnusedAssets): wtedy lista bylaby przezroczysta,
+        // wiec odtwarzamy styl, gdy tla juz nie ma
+        if (popupStyle != null && popupStyle.normal.background != null) return popupStyle;
         popupStyle = new GUIStyle(UIParams.Instance.winStyle);
         Texture2D bg = new Texture2D(2, 2);
+        bg.hideFlags = HideFlags.HideAndDontSave;
         Color dark = new Color(0.08f, 0.08f, 0.08f, 0.96f);
         bg.SetPixels(new Color[] { dark, dark, dark, dark });
         bg.Apply();
         popupStyle.normal.background = bg;
         popupStyle.onNormal.background = bg;
+        popupStyle.hover.background = bg;
+        popupStyle.active.background = bg;
+        popupStyle.focused.background = bg;
+        popupStyle.onHover.background = bg;
+        popupStyle.onActive.background = bg;
+        popupStyle.onFocused.background = bg;
+        // ramka okna ze skorki jest wieksza niz tekstura 2x2 (inaczej tlo sie nie rysuje)
+        popupStyle.border = new RectOffset(0, 0, 0, 0);
         popupStyle.padding = new RectOffset(4, 4, 4, 4);
         return popupStyle;
     }
