@@ -252,9 +252,10 @@ check the Library tab: a modification with an *object root pose* that is switche
 - **Colours** - the highlight colour (selected buttons, selected list items) is a neutral grey by default. Change it in
   Bone Display > `Detailed` (*Selection highlight colour*). The colours of the drawn bones are there too.
 - **Button font size** - `A-` / `A+` in the Library header (steps of 0.05, range 0.6 - 1.3, default 0.80).
+- **Label font size** - the static texts (labels) are scaled by `[Window] LabelFontScale` in the settings file (default 0.85, range 0.5 - 1.5); edit it while the game is closed.
 - **Window size** - drag the edges; it is saved when the game closes.
 - The settings file is `BepInEx\config\PartsEdit\COM3D2.PartsEdit.Plugin.ini` (the name comes from the original plugin and is
-  kept so your settings carry over). Relevant keys: `[Window] Width`, `Height`, `ButtonFontScale` and `[BoneDisplay] HighlightColor`.
+  kept so your settings carry over). Relevant keys: `[Window] Width`, `Height`, `ButtonFontScale`, `LabelFontScale` and `[BoneDisplay] HighlightColor`.
   An old red highlight colour (`#B80000`) from 0.2 is replaced by the new grey default.
 - **Language** - the UI follows the translation file; remove or rename `COM3D25_PartsEdit.txt` to see the Japanese source texts.
 

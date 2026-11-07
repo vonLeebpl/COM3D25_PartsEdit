@@ -40,6 +40,8 @@ namespace CM3D2.PartsEdit.Plugin {
         public static float windowHeight = 850f;
         // mnoznik rozmiaru czcionki przyciskow wzgledem czcionki interfejsu (ustawiany przyciskami A- / A+ w oknie Library)
         public static float buttonFontScale = 0.80f;
+        // mnoznik rozmiaru czcionki statycznych tekstow (etykiet) wzgledem czcionki interfejsu; ustawienie [Window] LabelFontScale w pliku ini
+        public static float labelFontScale = 0.85f;
 
         public static SettingValue<BodyBoneDisplay> bodyBoneDisplay = new SettingValue<BodyBoneDisplay>(BodyBoneDisplay.Visible);
 
@@ -92,6 +94,11 @@ namespace CM3D2.PartsEdit.Plugin {
                     System.Globalization.CultureInfo.InvariantCulture, out scale) && scale >= 0.5f && scale <= 1.5f) {
                 buttonFontScale = scale;
             }
+            float labelScale;
+            if (float.TryParse(IniUtil.GetStringValue("Window", "LabelFontScale", ""), System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out labelScale) && labelScale >= 0.5f && labelScale <= 1.5f) {
+                labelFontScale = labelScale;
+            }
             bodyBoneDisplay = new SettingValue<BodyBoneDisplay>((BodyBoneDisplay)IniUtil.GetIntValue("BoneDisplay", "BodyBoneDisplay", (int)BodyBoneDisplay.Visible));
         }
 
@@ -127,6 +134,7 @@ namespace CM3D2.PartsEdit.Plugin {
             IniUtil.preferences["Window"]["Width"].Value = windowWidth.ToString();
             IniUtil.preferences["Window"]["Height"].Value = windowHeight.ToString();
             IniUtil.preferences["Window"]["ButtonFontScale"].Value = buttonFontScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+            IniUtil.preferences["Window"]["LabelFontScale"].Value = labelFontScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
             IniUtil.preferences["BoneDisplay"]["BodyBoneDisplay"].Value = ((int)bodyBoneDisplay.GetValue()).ToString();
         }
 
