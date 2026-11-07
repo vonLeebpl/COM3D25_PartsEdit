@@ -89,7 +89,7 @@ The correction is made on the foot bones, so it follows the foot when the pose c
 - **Config** - *Bone Display* (Hide / Display; `Detailed` has colours and the select key), *Coord. Type* (Local / Global / View)
   and *Gizmo Type* (None / Pos. / Rot. / Scl. / IK). The highlighted button of a group is the active one.
 - **Obj. Select. Mode** - *Maid Parts* (a slot of a maid), *Multi Maids* and *Studio* (objects that are not maid slots).
-- **Operate** - choose the maid and the slot. The row **Preset** has `Library`, `Copy` (copy modifications between maids) and `IK`.
+- **Operate** - choose the maid and the slot. The row **Preset** has `Library`, `Copy` (copy sets, modifications and slot edits from another maid to the selected one; the source list holds the maids of the library and of the scene, with a filter "Only maids in the scene") and `IK`.
   *Shaking Bone* switches the game's sway physics (yure) of the slot, *Independent bones* is described below, *Bone:* shows
   the selected bone, and the `R` buttons revert the position / rotation / scale of that bone, the slot or the maid.
 - **Reset** (bottom left) reverts all changes made with PartsEdit, **End** closes the window; the gear button opens it again.
