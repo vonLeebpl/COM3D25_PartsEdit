@@ -39,6 +39,8 @@ namespace CM3D2.PartsEdit.Plugin
             window = gameObject.AddComponent<GearWindowSystem>().GetUIWindow();
             window.SetWindowInfo("PartsEdit", PluginInfo.Version);
             window.SetSize(new Vector2(Mathf.Min(Setting.windowWidth, Screen.width - 40f), Mathf.Min(Setting.windowHeight, Screen.height - 40f)));
+            ConfigBridge.WindowSizeChanged += OnConfigWindowSize;
+            ConfigBridge.FontScaleChanged += OnConfigFontScale;
 
             window.AddDrawEvent(Draw);
 
@@ -49,16 +51,45 @@ namespace CM3D2.PartsEdit.Plugin
             Harmony.CreateAndPatchAll(typeof(PartsEdit));
         }
 
+        float sizeCheckTime;
+
         void Update() {
             SetManager.TickAutoload();
             IKManager.BindObject();
+            SaveWindowSizeIfChanged();
+        }
+
+        // Rozmiar okna zmieniony przez uzytkownika trafia do cfg po puszczeniu myszy (a nie dopiero przy zamknieciu gry).
+        void SaveWindowSizeIfChanged() {
+            if (window == null || Time.unscaledTime < sizeCheckTime || Input.GetMouseButton(0)) return;
+            sizeCheckTime = Time.unscaledTime + 0.5f;
+            Rect rect = window.GetRect();
+            // oczekiwany rozmiar = ustawienie ograniczone do ekranu (tak jak przy otwieraniu okna)
+            float expectedW = Mathf.Min(Setting.windowWidth, Screen.width - 40f);
+            float expectedH = Mathf.Min(Setting.windowHeight, Screen.height - 40f);
+            if (Mathf.Abs(rect.width - expectedW) < 0.5f && Mathf.Abs(rect.height - expectedH) < 0.5f) return;
+            Setting.windowWidth = Mathf.Round(rect.width);
+            Setting.windowHeight = Mathf.Round(rect.height);
+            Setting.SaveIni();
         }
 
         void LateUpdate() {
             IKManager.RefreshHandles();
         }
 
+        // zmiana rozmiaru okna albo czcionek w oknie F1 (Configuration Manager) dziala od razu
+        void OnConfigWindowSize() {
+            if (window == null) return;
+            window.SetSize(new Vector2(Mathf.Min(Setting.windowWidth, Screen.width - 40f), Mathf.Min(Setting.windowHeight, Screen.height - 40f)));
+        }
+
+        void OnConfigFontScale() {
+            UIParams.Instance.ApplyFontScales();
+        }
+
         void OnDestroy() {
+            ConfigBridge.WindowSizeChanged -= OnConfigWindowSize;
+            ConfigBridge.FontScaleChanged -= OnConfigFontScale;
             if (window == null) return;
             Rect rect = window.GetRect();
             Setting.windowWidth = rect.width;

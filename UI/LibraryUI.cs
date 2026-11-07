@@ -73,13 +73,14 @@ namespace CM3D2.PartsEdit.Plugin {
             GUILayout.BeginHorizontal();
             GUILayout.Label(Text.Library, UIParams.Instance.lStyle);
             GUILayout.FlexibleSpace();
+            // Back na gorze (przy dlugich listach nie trzeba przewijac na sam dol); obok rozmiar czcionki przyciskow
+            if (GUILayout.Button(Text.Back, UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) Setting.mode = Mode.Edit;
             // rozmiar czcionki przyciskow (zapisywany w ustawieniach)
             if (GUILayout.Button("A-", UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) UIParams.Instance.AdjustButtonFont(-0.05f);
             if (GUILayout.Button("A+", UIParams.Instance.bStyle, GUILayout.ExpandWidth(false))) UIParams.Instance.AdjustButtonFont(0.05f);
             GUILayout.EndHorizontal();
             if (Db == null) {
                 GUILayout.Label(TL.LibraryUnavailable, UIParams.Instance.lStyle);
-                DrawBack();
                 return;
             }
 
@@ -101,6 +102,7 @@ namespace CM3D2.PartsEdit.Plugin {
 
         // ---------- wspolne ----------
 
+        // Back takze na dole ekranu (oprocz przycisku w naglowku)
         void DrawBack() {
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();

@@ -277,6 +277,11 @@ internal class UIParams {
         tbStyle.fontSize = ButtonFontPx();
     }
 
+    // Rozmiar czcionki statycznych etykiet = czcionka bazowa * mnoznik z pliku ini ([Window] LabelFontScale).
+    public static int LabelFontPx(int basePx) {
+        return Mathf.Max(8, Mathf.RoundToInt((basePx > 0 ? basePx : 14) * CM3D2.PartsEdit.Plugin.Setting.labelFontScale));
+    }
+
     // Rozmiar czcionki przyciskow = czcionka interfejsu * mnoznik z ustawien (A- / A+ w oknie Library).
     public int ButtonFontPx() {
         int basePx = fontSize > 0 ? fontSize : 14;
@@ -286,11 +291,25 @@ internal class UIParams {
     public void AdjustButtonFont(float delta) {
         float scale = Mathf.Round((CM3D2.PartsEdit.Plugin.Setting.buttonFontScale + delta) * 20f) / 20f;
         CM3D2.PartsEdit.Plugin.Setting.buttonFontScale = Mathf.Clamp(scale, 0.6f, 1.3f);
+        ApplyFontScales();
+        CM3D2.PartsEdit.Plugin.Setting.SaveIni();
+    }
+
+    // Przelicza czcionki etykiet i przyciskow po zmianie mnoznikow (A- / A+ albo okno F1).
+    public void ApplyFontScales() {
+        lStyle.fontSize = LabelFontPx(fontSize);
+        lStyleC.fontSize = LabelFontPx(fontSize);
+        lStyleB.fontSize = LabelFontPx(fontSize);
+        lStyleS.fontSize = LabelFontPx(fontSizeS);
+        lStyleRS.fontSize = LabelFontPx(fontSizeS);
+        // przelaczniki (np. Auto-load) to tez statyczne etykiety
+        tStyle.fontSize = LabelFontPx(fontSize);
+        tStyleS.fontSize = LabelFontPx(fontSizeS);
+        tStyleSS.fontSize = LabelFontPx(fontSizeSS);
         bStyle.fontSize = ButtonFontPx();
         bStyleL.fontSize = ButtonFontPx();
         tbStyle.fontSize = ButtonFontPx();
         tbStyleL.fontSize = ButtonFontPx();
-        CM3D2.PartsEdit.Plugin.Setting.SaveIni();
     }
 
     // Tla obszarow: dwa odcienie szarosci z cienka ramka, zeby sekcje i wiersze list byly wyraznie rozdzielone.
@@ -364,21 +383,21 @@ internal class UIParams {
         itemHeight = FixPx(itemHeightPx);
         unitHeight = margin + itemHeight;
 
-        lStyle.fontSize = fontSize;
-        lStyleC.fontSize = fontSize;
-        lStyleB.fontSize = fontSize;
+        lStyle.fontSize = LabelFontPx(fontSize);
+        lStyleC.fontSize = LabelFontPx(fontSize);
+        lStyleB.fontSize = LabelFontPx(fontSize);
 
-        lStyleS.fontSize = fontSizeS;
-        lStyleRS.fontSize = fontSizeS;
+        lStyleS.fontSize = LabelFontPx(fontSizeS);
+        lStyleRS.fontSize = LabelFontPx(fontSizeS);
 
         bStyle.fontSize = ButtonFontPx();
         bStyleSC.fontSize = fontSizeS;
         bStyleL.fontSize = ButtonFontPx();
         tbStyle.fontSize = ButtonFontPx();
         tbStyleL.fontSize = ButtonFontPx();
-        tStyle.fontSize = fontSize;
-        tStyleS.fontSize = fontSizeS;
-        tStyleSS.fontSize = fontSizeSS;
+        tStyle.fontSize = LabelFontPx(fontSize);
+        tStyleS.fontSize = LabelFontPx(fontSizeS);
+        tStyleSS.fontSize = LabelFontPx(fontSizeSS);
         tStyleL.fontSize = fontSizeL;
         listStyle.fontSize = fontSizeS;
         textStyle.fontSize = fontSize;

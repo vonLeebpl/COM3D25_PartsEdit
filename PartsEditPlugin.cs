@@ -11,7 +11,7 @@ using UnityInjector.Attributes;
 using ExIni;
 
 namespace CM3D2.PartsEdit.Plugin {
-    [PluginName("CM3D2 PartsEditPlugin"), PluginVersion("0.3")]
+    [PluginName("CM3D2 PartsEditPlugin"), PluginVersion("0.3.1")]
     class PartsEditPlugin : PluginBase {
         internal static bool started;
 

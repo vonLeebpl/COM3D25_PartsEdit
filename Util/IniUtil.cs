@@ -20,6 +20,12 @@ internal static class IniUtil {
         saveMethod += SaveFile;
     }
 
+    // Tylko do odczytu: stare ustawienia z ini sa wczytywane raz (migracja do cfg BepInEx), plik nie jest juz zapisywany.
+    public static void InitFileReadOnly(string path) {
+        filePath = path;
+        preferences = File.Exists(path) ? IniFile.FromFile(path) : new IniFile();
+    }
+
     static void SaveFile() {
         if (preferences == null || string.IsNullOrEmpty(filePath)) return;
         string dir = Path.GetDirectoryName(filePath);
